@@ -89,12 +89,17 @@ export function useHomeFeed(): HomeFeedResult {
 	});
 
 	useEffect(() => {
-		// Defer the network fetch until after mount animations/interactions
-		// complete so the feed screen paints without blocking on async I/O.
-		const task = InteractionManager.runAfterInteractions(() => {
+		let ran = false;
+		const executeFetch = () => {
+			if (ran) return;
+			ran = true;
 			useHomeFeedStore.setState({ activeFilterIndex: null });
 			homeFeedService.fetchHomeFeed();
-		});
+		};
+
+		// Run after mount interactions, with a guaranteed fallback timeout
+		const task = InteractionManager.runAfterInteractions(executeFetch);
+		const fallbackTimer = setTimeout(executeFetch, 150);
 
 		// Periodic auto-refresh interval provision to update suggestions periodically
 		const intervalId = setInterval(() => {
@@ -103,6 +108,7 @@ export function useHomeFeed(): HomeFeedResult {
 
 		return () => {
 			task.cancel();
+			clearTimeout(fallbackTimer);
 			clearInterval(intervalId);
 		};
 	}, [languageKey]);

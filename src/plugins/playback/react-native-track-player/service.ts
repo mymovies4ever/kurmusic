@@ -284,6 +284,18 @@ export async function PlaybackService(): Promise<void> {
 									},
 								];
 							}
+							if (item.type === 'playlist') {
+								return [
+									{
+										id: `playlist_tracks:${item.data.id}`,
+										title: item.data.name,
+										subtitle: 'Playlist',
+										playable: false,
+										browsable: true,
+										iconUri: item.data.artwork?.[0]?.url || '',
+									},
+								];
+							}
 							return [];
 						})
 					)
@@ -469,24 +481,6 @@ export async function PlaybackService(): Promise<void> {
 						browsable: false,
 					});
 				}
-			}
-
-			// Prepend Android Auto Mini Player if a song is active
-			const currentTrack = usePlayerStore.getState().currentTrack;
-			if (currentTrack && event.parentId !== 'queue') {
-				const isPlaying = usePlayerStore.getState().status === 'playing';
-				// Remove empty messages if we are adding a real item
-				if (items.length === 1 && items[0].id.startsWith('empty_')) {
-					items = [];
-				}
-				items.unshift({
-					id: 'android_auto_mini_player',
-					title: `${isPlaying ? 'Now Playing: ' : 'Paused: '}${currentTrack.title}`,
-					subtitle: getArtistNames(currentTrack),
-					playable: true,
-					browsable: false,
-					iconUri: getTrackArtwork(currentTrack),
-				});
 			}
 
 			// Send results back to native side

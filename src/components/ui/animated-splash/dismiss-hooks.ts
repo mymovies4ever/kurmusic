@@ -28,6 +28,11 @@ export function useDismissAnimation(isReady: boolean, onAnimationComplete?: () =
 	useEffect(() => {
 		if (isReady) {
 			bootstrapDone.value = true;
+			// Safety watchdog: ensure dismissReady is triggered even if progress reaction drops
+			const timer = setTimeout(() => {
+				setDismissReady(true);
+			}, 1000);
+			return () => clearTimeout(timer);
 		}
 	}, [isReady, bootstrapDone]);
 
@@ -52,7 +57,7 @@ export function useDismissReaction(
 	setDismissReady: (ready: boolean) => void
 ) {
 	useAnimatedReaction(
-		() => bootstrapDone.value && progressWidth.value >= 0.99,
+		() => bootstrapDone.value && progressWidth.value >= 0.95,
 		(ready, prev) => {
 			if (ready && !prev) {
 				runOnJS(setDismissReady)(true);
@@ -71,10 +76,18 @@ export function useDismissEffect(
 ) {
 	useEffect(() => {
 		if (dismissReady) {
-			translateY.value = withTiming(-screenHeight, {
-				duration: ANIMATION_DURATION,
-				easing: Easing.in(Easing.cubic),
-			});
+			translateY.value = withTiming(
+				-screenHeight,
+				{
+					duration: ANIMATION_DURATION,
+					easing: Easing.in(Easing.cubic),
+				},
+				(finished) => {
+					if (finished) {
+						runOnJS(handleAnimationComplete)();
+					}
+				}
+			);
 
 			opacity.value = withDelay(
 				ANIMATION_DURATION / 2,
@@ -84,11 +97,11 @@ export function useDismissEffect(
 				})
 			);
 
-			if (IS_WEB) {
-				setTimeout(() => {
-					handleAnimationComplete();
-				}, ANIMATION_DURATION + 50);
-			}
+			const timer = setTimeout(() => {
+				handleAnimationComplete();
+			}, ANIMATION_DURATION + 100);
+
+			return () => clearTimeout(timer);
 		}
 	}, [dismissReady, translateY, opacity, handleAnimationComplete, screenHeight]);
 }
@@ -99,17 +112,13 @@ export function useNativeDismissReaction(
 	handleAnimationComplete: () => void
 ) {
 	useAnimatedReaction(
-		() => translateY.value,
-		(currentValue, previousValue) => {
-			if (
-				previousValue !== null &&
-				currentValue <= -screenHeight &&
-				previousValue > -screenHeight
-			) {
+		() => translateY.value <= -screenHeight + 1,
+		(isDismissed, prev) => {
+			if (isDismissed && !prev) {
 				runOnJS(handleAnimationComplete)();
 			}
 		},
-		[handleAnimationComplete]
+		[handleAnimationComplete, screenHeight]
 	);
 }
 

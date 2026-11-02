@@ -72,10 +72,11 @@ export async function ensureBootstrapped(): Promise<BootstrapResult | null> {
 		lazyBootstrap();
 	}
 
-	// Wait for bootstrap to complete
+	// Wait for bootstrap to complete, with a 5s maximum safeguard
 	return new Promise((resolve) => {
+		const startTime = Date.now();
 		const check = () => {
-			if (isBootstrapped) {
+			if (isBootstrapped || Date.now() - startTime > 5000) {
 				resolve(bootstrapPromise);
 			} else {
 				setTimeout(check, 50);

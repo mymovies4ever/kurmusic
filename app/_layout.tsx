@@ -62,6 +62,12 @@ function AppContent() {
 		ensureBootstrapped().then(() => {
 			setIsReady(true);
 		});
+		// Safety watchdog: ensure splash overlay never traps the user if animation drops
+		const timer = setTimeout(() => {
+			setIsReady(true);
+			setShowSplash(false);
+		}, 3500);
+		return () => clearTimeout(timer);
 	}, []);
 
 	const handleSplashComplete = useCallback(() => {

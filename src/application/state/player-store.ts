@@ -8,6 +8,7 @@ import {
 	getPreviousTrackIndex,
 	shuffleArray,
 } from '../../domain/value-objects/playback-state';
+import { getTrackIdString } from '../../domain/value-objects/track-id';
 
 interface PlayerState {
 	status: PlaybackStatus;
@@ -176,12 +177,30 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
 	setQueue: (tracks: Track[], startIndex = 0) => {
 		const state = get();
-		const effectiveQueue = state.isShuffled ? shuffleArray(tracks, startIndex) : tracks;
-		const effectiveIndex = state.isShuffled ? startIndex : startIndex;
+		// If setting the same queue (e.g. track transition or picking a song within the active queue),
+		// do not reshuffle! Preserve the existing established queue order.
+		const isSameQueue =
+			tracks === state.queue ||
+			(tracks.length === state.queue.length &&
+				tracks.length > 0 &&
+				getTrackIdString(tracks[0].id) === getTrackIdString(state.queue[0].id) &&
+				getTrackIdString(tracks[tracks.length - 1].id) ===
+					getTrackIdString(state.queue[state.queue.length - 1].id));
+
+		let effectiveQueue: Track[];
+		const effectiveIndex = startIndex;
+
+		if (isSameQueue) {
+			effectiveQueue = state.queue;
+		} else if (state.isShuffled) {
+			effectiveQueue = shuffleArray(tracks, startIndex);
+		} else {
+			effectiveQueue = tracks;
+		}
 
 		set({
 			queue: effectiveQueue,
-			originalQueue: tracks,
+			originalQueue: isSameQueue ? state.originalQueue : tracks,
 			queueIndex: effectiveIndex,
 			currentTrack: effectiveQueue[effectiveIndex] || null,
 		});
@@ -271,21 +290,36 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
 		if (newShuffleState) {
 			const currentTrack = state.currentTrack;
-			const shuffled = shuffleArray(state.originalQueue, state.queueIndex);
+			const currentTrackId = currentTrack ? getTrackIdString(currentTrack.id) : null;
+			const origIndex = currentTrackId
+				? state.originalQueue.findIndex((t) => getTrackIdString(t.id) === currentTrackId)
+				: -1;
+
+			const shuffled = shuffleArray(
+				state.originalQueue,
+				origIndex >= 0 ? origIndex : undefined
+			);
+
+			const newIndex = currentTrackId
+				? shuffled.findIndex((t) => getTrackIdString(t.id) === currentTrackId)
+				: -1;
 
 			set({
 				isShuffled: true,
 				queue: shuffled,
-				queueIndex: currentTrack ? shuffled.indexOf(currentTrack) : -1,
+				queueIndex: newIndex >= 0 ? newIndex : 0,
 			});
 		} else {
 			const currentTrack = state.currentTrack;
-			const originalIndex = currentTrack ? state.originalQueue.indexOf(currentTrack) : -1;
+			const currentTrackId = currentTrack ? getTrackIdString(currentTrack.id) : null;
+			const originalIndex = currentTrackId
+				? state.originalQueue.findIndex((t) => getTrackIdString(t.id) === currentTrackId)
+				: -1;
 
 			set({
 				isShuffled: false,
 				queue: state.originalQueue,
-				queueIndex: originalIndex,
+				queueIndex: originalIndex >= 0 ? originalIndex : 0,
 			});
 		}
 	},

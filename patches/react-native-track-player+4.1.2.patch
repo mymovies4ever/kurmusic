@@ -453,7 +453,7 @@ index b2409a0..04e6802 100644
      }
  }
 diff --git a/node_modules/react-native-track-player/android/src/main/java/com/doublesymmetry/trackplayer/service/MusicService.kt b/node_modules/react-native-track-player/android/src/main/java/com/doublesymmetry/trackplayer/service/MusicService.kt
-index afa6b0f..bd17800 100644
+index afa6b0f..f1a1cbf 100644
 --- a/node_modules/react-native-track-player/android/src/main/java/com/doublesymmetry/trackplayer/service/MusicService.kt
 +++ b/node_modules/react-native-track-player/android/src/main/java/com/doublesymmetry/trackplayer/service/MusicService.kt
 @@ -10,6 +10,11 @@ import android.os.Build
@@ -742,7 +742,7 @@ index afa6b0f..bd17800 100644
      }
  
      @MainThread
-@@ -751,62 +933,328 @@ class MusicService : HeadlessJsTaskService() {
+@@ -751,62 +933,327 @@ class MusicService : HeadlessJsTaskService() {
          val payload = Arguments.createArray()
          data.forEach { payload.pushMap(Arguments.fromBundle(it)) }
  
@@ -1005,7 +1005,6 @@ index afa6b0f..bd17800 100644
 +    }
 +
 +    private fun notifyAndroidAutoBrowseTreeChanged() {
-+        notifyChildrenChanged(ROOT_ID)
 +        notifyChildrenChanged(QUEUE_ID)
 +    }
 +
@@ -1104,7 +1103,7 @@ index afa6b0f..bd17800 100644
      inner class MusicBinder : Binder() {
          val service = this@MusicService
      }
-@@ -825,6 +1273,15 @@ class MusicService : HeadlessJsTaskService() {
+@@ -825,6 +1272,15 @@ class MusicService : HeadlessJsTaskService() {
  
          const val TASK_KEY = "TrackPlayer"
  

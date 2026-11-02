@@ -439,14 +439,17 @@ export class PlaybackService {
 			return err(recommendationsResult.error);
 		}
 
-		const recommendations = recommendationsResult.data.filter(
-			(item) => getTrackIdString(item.id) !== getTrackIdString(track.id)
-		);
+		const store = usePlayerStore.getState();
+		const currentQueueTrackIds = new Set(store.queue.map((t) => getTrackIdString(t.id)));
+
+		const recommendations = recommendationsResult.data.filter((item) => {
+			const itemId = getTrackIdString(item.id);
+			return itemId !== getTrackIdString(track.id) && !currentQueueTrackIds.has(itemId);
+		});
 		if (recommendations.length === 0) {
 			return ok(0);
 		}
 
-		const store = usePlayerStore.getState();
 		const insertIndex = Math.max(store.queueIndex + 1, 0);
 		recommendations
 			.slice()
