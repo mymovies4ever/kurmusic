@@ -34,6 +34,7 @@ interface SplashNativeProps {
 	readonly polygonContainerStyle: AnimatedStyle<ViewStyle>;
 	readonly progressFillStyle: AnimatedStyle<ViewStyle>;
 	readonly progressSectionStyle: AnimatedStyle<ViewStyle>;
+	readonly dismissReady?: boolean;
 }
 
 export function SplashNative({
@@ -45,6 +46,7 @@ export function SplashNative({
 	polygonContainerStyle,
 	progressFillStyle,
 	progressSectionStyle,
+	dismissReady,
 }: SplashNativeProps) {
 	const logoScale = useSharedValue(1);
 	const logoGlow = useSharedValue(0.85);
@@ -126,7 +128,10 @@ export function SplashNative({
 	const bar5Style = useAnimatedStyle(() => ({ height: bar5.value }));
 
 	return (
-		<Animated.View style={[styles.container, containerStyle]}>
+		<Animated.View
+			style={[styles.container, containerStyle]}
+			pointerEvents={dismissReady ? 'none' : 'auto'}
+		>
 			<Animated.View
 				style={[styles.background, { backgroundColor: colors.background }, backgroundStyle]}
 			/>

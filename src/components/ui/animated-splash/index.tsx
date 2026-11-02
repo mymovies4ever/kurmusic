@@ -84,6 +84,7 @@ export function AnimatedSplash({
 			polygonContainerStyle={animatedStyles.polygonContainerStyle}
 			progressFillStyle={animatedStyles.progressFillStyle}
 			progressSectionStyle={animatedStyles.progressSectionStyle}
+			dismissReady={dismissReady}
 		/>
 	);
 }
