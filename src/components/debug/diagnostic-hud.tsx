@@ -23,6 +23,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDiagnosticStore } from '@/src/application/state/diagnostic-store';
 import { debugLogger, type LogEntry } from '@/src/shared/services/debug-logger';
+import { freezeWatchdog } from '@/src/shared/services/freeze-watchdog';
 
 export function DiagnosticHud() {
 	const insets = useSafeAreaInsets();
@@ -71,6 +72,14 @@ export function DiagnosticHud() {
 		} else {
 			Alert.alert('Export Failed', result.error.message);
 		}
+	}, []);
+
+	const handleSaveFreezeReport = useCallback(async () => {
+		await freezeWatchdog.evaluateAndAutoSaveReport('MANUAL_USER_TRIGGER');
+		Alert.alert(
+			'Freeze Report Saved',
+			'Saved to:\n/sdcard/Android/media/com.kurmusic.app/FREEZE_ANALYSIS.txt'
+		);
 	}, []);
 
 	const handleClearLogs = useCallback(async () => {
@@ -135,6 +144,19 @@ export function DiagnosticHud() {
 						</Pressable>
 					</View>
 					<View style={styles.secondaryActions}>
+						<Pressable
+							style={[styles.smallBtn, { backgroundColor: '#b45309' }]}
+							onPress={handleSaveFreezeReport}
+						>
+							<Text
+								style={[
+									styles.smallBtnText,
+									{ color: '#fef3c7', fontWeight: 'bold' },
+								]}
+							>
+								⚡ Save Freeze Report
+							</Text>
+						</Pressable>
 						<Pressable style={styles.smallBtn} onPress={handleClearLogs}>
 							<Text style={styles.smallBtnText}>Clear Logs</Text>
 						</Pressable>

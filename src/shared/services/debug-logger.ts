@@ -128,20 +128,78 @@ class DebugLogger {
 		return dir;
 	}
 
+	private async ensurePublicMediaDirectory(): Promise<string | null> {
+		if (Platform.OS !== 'android') return null;
+		const mediaDir = 'file:///storage/emulated/0/Android/media/com.kurmusic.app/';
+		await FileSystem.makeDirectoryAsync(mediaDir, { intermediates: true }).catch(() => {});
+		return mediaDir;
+	}
+
 	private queueFileWrite(entry: LogEntry): void {
 		this.writeQueue = this.writeQueue
 			.then(async () => {
-				const dir = await this.ensureDirectory();
-				if (!dir) return;
-
-				const filePath = `${dir}${DEBUG_LOG_FILE}`;
 				const line = `[${entry.timestamp}] [${entry.level.toUpperCase()}] [${entry.tag}] ${entry.message}\n`;
-				const existing = await FileSystem.readAsStringAsync(filePath).catch(() => '');
-				// Cap internal log file at ~2MB to prevent unbounded disk growth
-				const trimmed = existing.length > 2_000_000 ? existing.slice(-1_000_000) : existing;
-				await FileSystem.writeAsStringAsync(filePath, trimmed + line);
+
+				// 1. Write to internal app directory
+				const dir = await this.ensureDirectory();
+				if (dir) {
+					const filePath = `${dir}${DEBUG_LOG_FILE}`;
+					const existing = await FileSystem.readAsStringAsync(filePath).catch(() => '');
+					const trimmed =
+						existing.length > 2_000_000 ? existing.slice(-1_000_000) : existing;
+					await FileSystem.writeAsStringAsync(filePath, trimmed + line).catch(() => {});
+				}
+
+				// 2. Also write to open /Android/media/ directory (accessible by any file manager without permission)
+				const mediaDir = await this.ensurePublicMediaDirectory();
+				if (mediaDir) {
+					const mediaPath = `${mediaDir}kurmusic-boot.log`;
+					const existingMedia = await FileSystem.readAsStringAsync(mediaPath).catch(
+						() => ''
+					);
+					const trimmedMedia =
+						existingMedia.length > 2_000_000
+							? existingMedia.slice(-1_000_000)
+							: existingMedia;
+					await FileSystem.writeAsStringAsync(mediaPath, trimmedMedia + line).catch(
+						() => {}
+					);
+				}
 			})
 			.catch(() => {});
+	}
+
+	/**
+	 * Prompt user for folder permission immediately on boot so system dialog appears
+	 */
+	public async promptPermissionOnBoot(): Promise<void> {
+		if (Platform.OS !== 'android') return;
+		try {
+			this.record('Boot', 'info', 'Triggering system storage permission prompt on boot...');
+			const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync();
+			if (permissions.granted) {
+				this.record(
+					'Boot',
+					'info',
+					`Storage permission granted: ${permissions.directoryUri}`
+				);
+				const content = await this.getFullLogContent();
+				const fileName = `kurmusic-debug-boot-${Date.now()}.txt`;
+				const fileUri = await StorageAccessFramework.createFileAsync(
+					permissions.directoryUri,
+					fileName,
+					'text/plain'
+				);
+				await FileSystem.writeAsStringAsync(fileUri, content, {
+					encoding: FileSystem.EncodingType.UTF8,
+				});
+				this.record('Boot', 'info', `Auto-saved boot log to ${fileName}`);
+			} else {
+				this.record('Boot', 'warn', 'Storage permission dismissed or denied');
+			}
+		} catch (error) {
+			this.record('Boot', 'warn', `Boot permission prompt skipped: ${String(error)}`);
+		}
 	}
 
 	public async getFullLogContent(): Promise<string> {

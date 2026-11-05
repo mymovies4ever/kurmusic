@@ -84,17 +84,12 @@ export default function TabLayout() {
 			headerShown: false,
 			animation: 'shift' as const,
 			lazy: false,
-			freezeOnBlur: !bypassFreeze,
-			sceneStyle: bypassSceneClip
-				? { backgroundColor: colors.background }
-				: {
-						borderTopLeftRadius: 48,
-						borderTopRightRadius: 48,
-						overflow: 'hidden' as const,
-						backgroundColor: colors.background,
-					},
+			freezeOnBlur: false,
+			sceneStyle: {
+				backgroundColor: colors.background,
+			},
 		}),
-		[colors.background, bypassSceneClip, bypassFreeze]
+		[colors.background]
 	);
 
 	// Stabilize the tabBar render callback so the navigator never receives a

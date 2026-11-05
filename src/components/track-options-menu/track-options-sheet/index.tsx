@@ -65,6 +65,10 @@ export function TrackOptionsSheet() {
 		[]
 	);
 
+	if (!isOpen || !track) {
+		return null;
+	}
+
 	return (
 		<BottomSheetPortal
 			name={'track-options-sheet'}

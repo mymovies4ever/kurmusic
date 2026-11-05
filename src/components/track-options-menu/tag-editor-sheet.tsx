@@ -506,6 +506,10 @@ export function TagEditorSheet() {
 	const artworkUrl =
 		newArtworkUrl ?? downloadedMeta?.artworkUrl ?? getBestArtwork(track?.artwork, 200)?.url;
 
+	if (!isOpen || !track) {
+		return null;
+	}
+
 	return (
 		<BottomSheet
 			ref={sheetRef}

@@ -31,6 +31,7 @@ import {
 } from '@/src/application/state/player-ui-store';
 import { enableFreeze } from 'react-native-screens';
 import { debugLogger } from '@/src/shared/services/debug-logger';
+import { freezeWatchdog } from '@/src/shared/services/freeze-watchdog';
 import { useDiagnosticStore } from '@/src/application/state/diagnostic-store';
 import { TouchProbe } from '@/src/components/debug/touch-probe';
 import { DiagnosticHud } from '@/src/components/debug/diagnostic-hud';
@@ -38,14 +39,17 @@ import { DiagnosticHud } from '@/src/components/debug/diagnostic-hud';
 const PORTAL_Z_INDEX = 9999;
 
 debugLogger.init();
+freezeWatchdog.start();
 SplashScreen.hide();
 lazyBootstrap();
-enableFreeze(true);
+enableFreeze(false);
 
 function AppContent() {
 	const { colors, isDark } = useAppTheme();
 	const [isReady, setIsReady] = useState(false);
-	const [showSplash, setShowSplash] = useState(true);
+	// Permanently disable AnimatedSplash overlay: on OriginOS 6/Snapdragon 8+ Gen 1,
+	// the zIndex: 9999 absoluteFill overlay intercepts touches even when transparent.
+	const [showSplash, setShowSplash] = useState(false);
 	const sleepTimerSheetOpen = useSleepTimerSheetOpen();
 	const closeSleepTimerSheet = usePlayerUIStore((state) => state.closeSleepTimerSheet);
 	const queueSheetOpen = useQueueSheetOpen();
@@ -56,13 +60,9 @@ function AppContent() {
 	const bypassSplash = useDiagnosticStore((state) => state.bypassSplash);
 
 	useEffect(() => {
-		enableFreeze(!bypassFreeze);
-		debugLogger.record(
-			'Diagnostics',
-			'info',
-			`react-freeze is ${bypassFreeze ? 'DISABLED' : 'ENABLED'}`
-		);
-	}, [bypassFreeze]);
+		enableFreeze(false);
+		debugLogger.record('Diagnostics', 'info', 'react-freeze is permanently DISABLED');
+	}, []);
 
 	useGlobalErrorHandlers();
 
@@ -77,15 +77,12 @@ function AppContent() {
 	});
 
 	useEffect(() => {
+		freezeWatchdog.recordMilestone('BOOTSTRAP_START', 'ensureBootstrapped initiated');
 		ensureBootstrapped().then(() => {
 			setIsReady(true);
+			freezeWatchdog.recordMilestone('BOOTSTRAP_DONE', 'ensureBootstrapped resolved');
 		});
-		// Safety watchdog: ensure splash overlay never traps the user if animation drops
-		const timer = setTimeout(() => {
-			setIsReady(true);
-			setShowSplash(false);
-		}, 3500);
-		return () => clearTimeout(timer);
+		void debugLogger.promptPermissionOnBoot();
 	}, []);
 
 	const handleSplashComplete = useCallback(() => {
