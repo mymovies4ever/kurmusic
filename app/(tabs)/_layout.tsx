@@ -28,6 +28,9 @@ const INDICATOR_TOP = 11;
 
 const TAB_SPRING_CONFIG = { damping: 20, stiffness: 200, mass: 0.5 };
 
+import { useDiagnosticStore } from '@/src/application/state/diagnostic-store';
+import { debugLogger } from '@/src/shared/services/debug-logger';
+
 // Lightweight pub/sub so the tab bar can notify the header of active tab
 // changes without re-rendering the parent TabLayout (which would recreate
 // Tabs.Screen children and trigger full screen unmount/remount).
@@ -36,6 +39,8 @@ const activeTabListeners = new Set<ActiveTabListener>();
 
 function emitActiveTab(tabId: TabId): void {
 	activeTabListeners.forEach((fn) => fn(tabId));
+	useDiagnosticStore.getState().setActiveTab(tabId);
+	debugLogger.record('Navigation', 'info', `Tab switched to: ${tabId}`);
 }
 
 function useActiveTabListener(initial: TabId): TabId {
@@ -71,21 +76,25 @@ export default function TabLayout() {
 	}, [tabOrder, enabledTabs]);
 
 	const { colors } = useAppTheme();
+	const bypassSceneClip = useDiagnosticStore((state) => state.bypassSceneClip);
+	const bypassFreeze = useDiagnosticStore((state) => state.bypassFreeze);
 
 	const screenOptions = useMemo(
 		() => ({
 			headerShown: false,
 			animation: 'shift' as const,
 			lazy: false,
-			freezeOnBlur: true,
-			sceneStyle: {
-				borderTopLeftRadius: 48,
-				borderTopRightRadius: 48,
-				overflow: 'hidden' as const,
-				backgroundColor: colors.background,
-			},
+			freezeOnBlur: !bypassFreeze,
+			sceneStyle: bypassSceneClip
+				? { backgroundColor: colors.background }
+				: {
+						borderTopLeftRadius: 48,
+						borderTopRightRadius: 48,
+						overflow: 'hidden' as const,
+						backgroundColor: colors.background,
+					},
 		}),
-		[colors.background]
+		[colors.background, bypassSceneClip, bypassFreeze]
 	);
 
 	// Stabilize the tabBar render callback so the navigator never receives a

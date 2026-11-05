@@ -30,9 +30,14 @@ import {
 	usePlayerUIStore,
 } from '@/src/application/state/player-ui-store';
 import { enableFreeze } from 'react-native-screens';
+import { debugLogger } from '@/src/shared/services/debug-logger';
+import { useDiagnosticStore } from '@/src/application/state/diagnostic-store';
+import { TouchProbe } from '@/src/components/debug/touch-probe';
+import { DiagnosticHud } from '@/src/components/debug/diagnostic-hud';
 
 const PORTAL_Z_INDEX = 9999;
 
+debugLogger.init();
 SplashScreen.hide();
 lazyBootstrap();
 enableFreeze(true);
@@ -45,6 +50,19 @@ function AppContent() {
 	const closeSleepTimerSheet = usePlayerUIStore((state) => state.closeSleepTimerSheet);
 	const queueSheetOpen = useQueueSheetOpen();
 	const closeQueueSheet = usePlayerUIStore((state) => state.closeQueueSheet);
+
+	const bypassFreeze = useDiagnosticStore((state) => state.bypassFreeze);
+	const bypassPortal = useDiagnosticStore((state) => state.bypassPortal);
+	const bypassSplash = useDiagnosticStore((state) => state.bypassSplash);
+
+	useEffect(() => {
+		enableFreeze(!bypassFreeze);
+		debugLogger.record(
+			'Diagnostics',
+			'info',
+			`react-freeze is ${bypassFreeze ? 'DISABLED' : 'ENABLED'}`
+		);
+	}, [bypassFreeze]);
 
 	useGlobalErrorHandlers();
 
@@ -102,25 +120,33 @@ function AppContent() {
 				<Stack.Screen name={'add-to-playlist'} options={{ presentation: 'modal' }} />
 			</Stack>
 			<FloatingPlayer />
-			<QueueSheet isOpen={queueSheetOpen} onClose={closeQueueSheet} />
-			<SleepTimerSheet isOpen={sleepTimerSheetOpen} onClose={closeSleepTimerSheet} />
-			<TrackOptionsSheet />
-			<TagEditorSheet />
+			{!bypassPortal && (
+				<>
+					<QueueSheet isOpen={queueSheetOpen} onClose={closeQueueSheet} />
+					<SleepTimerSheet isOpen={sleepTimerSheetOpen} onClose={closeSleepTimerSheet} />
+					<TrackOptionsSheet />
+					<TagEditorSheet />
+				</>
+			)}
 			<ToastContainer />
 			<AutoUpdateDialog />
 			<ScanProgressToast />
 			<ImportProgressToast />
 			<StatusBar style={isDark ? 'light' : 'dark'} />
-			<View style={styles.portalHost} pointerEvents={'box-none'}>
-				<PortalHost />
-			</View>
-			{showSplash && (
+			{!bypassPortal && (
+				<View style={styles.portalHost} pointerEvents={'box-none'}>
+					<PortalHost />
+				</View>
+			)}
+			{showSplash && !bypassSplash && (
 				<AnimatedSplash
 					isReady={isReady}
 					onAnimationComplete={handleSplashComplete}
 					isDark={isDark}
 				/>
 			)}
+			<TouchProbe />
+			<DiagnosticHud />
 		</View>
 	);
 }
