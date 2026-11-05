@@ -94,16 +94,16 @@ Categories:
 License: MIT
 
 AuthorName: Kurup
-AuthorWebSite: https://github.com/akhilraghavakurup-beep
+AuthorWebSite: https://github.com/mymovies4ever
 
-WebSite: https://github.com/akhilraghavakurup-beep/kur3.0
-SourceCode: https://github.com/akhilraghavakurup-beep/kur3.0
-IssueTracker: https://github.com/akhilraghavakurup-beep/kur3.0/issues
+WebSite: https://github.com/mymovies4ever/kurmusic
+SourceCode: https://github.com/mymovies4ever/kurmusic
+IssueTracker: https://github.com/mymovies4ever/kurmusic/issues
 
 AutoName: Kur Music
 
 RepoType: git
-Repo: https://github.com/akhilraghavakurup-beep/kur3.0.git
+Repo: https://github.com/mymovies4ever/kurmusic.git
 
 Builds:
     - versionName: 0.2.1-beta

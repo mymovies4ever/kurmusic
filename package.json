@@ -6,6 +6,10 @@
 		"name": "Kurup"
 	},
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/mymovies4ever/kurmusic.git"
+	},
 	"scripts": {
 		"postinstall": "patch-package",
 		"start": "expo start",

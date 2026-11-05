@@ -19,6 +19,8 @@ import { TAB_CONFIG, TAB_BAR_HEIGHT } from '@/lib/tab-config';
 import { LottieTabIcon } from '@/src/components/ui/lottie-tab-icon';
 import { StaticTabIcon } from '@/src/components/ui/static-tab-icon';
 import { Icon } from '@/src/components/ui/icon';
+import { useDiagnosticStore } from '@/src/application/state/diagnostic-store';
+import { debugLogger } from '@/src/shared/services/debug-logger';
 
 const TAB_WIDTH = 72;
 const TAB_GAP = 12;
@@ -27,9 +29,6 @@ const INDICATOR_HEIGHT = 32;
 const INDICATOR_TOP = 11;
 
 const TAB_SPRING_CONFIG = { damping: 20, stiffness: 200, mass: 0.5 };
-
-import { useDiagnosticStore } from '@/src/application/state/diagnostic-store';
-import { debugLogger } from '@/src/shared/services/debug-logger';
 
 // Lightweight pub/sub so the tab bar can notify the header of active tab
 // changes without re-rendering the parent TabLayout (which would recreate
@@ -76,8 +75,6 @@ export default function TabLayout() {
 	}, [tabOrder, enabledTabs]);
 
 	const { colors } = useAppTheme();
-	const bypassSceneClip = useDiagnosticStore((state) => state.bypassSceneClip);
-	const bypassFreeze = useDiagnosticStore((state) => state.bypassFreeze);
 
 	const screenOptions = useMemo(
 		() => ({

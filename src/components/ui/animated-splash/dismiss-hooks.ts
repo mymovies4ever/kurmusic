@@ -16,7 +16,7 @@ import {
 	runOnJS,
 	interpolate,
 } from 'react-native-reanimated';
-import { ANIMATION_DURATION, PROGRESS_BAR_WIDTH, IS_WEB } from './types';
+import { ANIMATION_DURATION, PROGRESS_BAR_WIDTH } from './types';
 
 export function useDismissAnimation(isReady: boolean, onAnimationComplete?: () => void) {
 	const { height: screenHeight } = useWindowDimensions();

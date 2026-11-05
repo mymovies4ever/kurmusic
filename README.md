@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/akhilraghavakurup-beep/kur3.0/releases">
-    <img src="https://img.shields.io/github/v/release/akhilraghavakurup-beep/kur3.0?color=7C3AED&label=Version" alt="Version 1.1" />
+  <a href="https://github.com/mymovies4ever/kurmusic/releases">
+    <img src="https://img.shields.io/github/v/release/mymovies4ever/kurmusic?color=7C3AED&label=Version" alt="Version 1.2.6" />
   </a>
   <img src="https://img.shields.io/badge/Platform-Android%20arm64--v8a-blue" alt="Android ARM64" />
   <img src="https://img.shields.io/badge/Engine-New%20Road%20to%20Dreams-purple" alt="Engine" />
@@ -40,10 +40,10 @@
 
 ## 📥 Download & Installation
 
-Get the latest release APK from the official **[Releases Page](https://github.com/akhilraghavakurup-beep/kur3.0/releases)**.
+Get the latest release APK from the official **[Releases Page](https://github.com/mymovies4ever/kurmusic/releases)**.
 
 ```bash
-# Download kurmusic-1.1.0-release.apk and install on any Android 8.0+ 64-bit device
+# Download kurmusic-1.2.6-release.apk and install on any Android 8.0+ 64-bit device
 ```
 
 ---
@@ -52,8 +52,8 @@ Get the latest release APK from the official **[Releases Page](https://github.co
 
 ```bash
 # Clone the repository
-git clone https://github.com/akhilraghavakurup-beep/kur3.0.git
-cd kur3.0
+git clone https://github.com/mymovies4ever/kurmusic.git
+cd kurmusic
 
 # Install dependencies
 npm install

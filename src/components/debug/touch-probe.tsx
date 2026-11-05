@@ -28,7 +28,7 @@ export function TouchProbe() {
 	return (
 		<View
 			style={StyleSheet.absoluteFill}
-			pointerEvents="box-none"
+			pointerEvents={'box-none'}
 			onStartShouldSetResponderCapture={(evt) => {
 				const { pageX, pageY } = evt.nativeEvent;
 				useDiagnosticStore.getState().registerTouch(pageX, pageY);
@@ -43,7 +43,7 @@ export function TouchProbe() {
 		>
 			{visibleDot && (
 				<View
-					pointerEvents="none"
+					pointerEvents={'none'}
 					style={[
 						styles.touchDot,
 						{

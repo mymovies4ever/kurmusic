@@ -55,7 +55,6 @@ function AppContent() {
 	const queueSheetOpen = useQueueSheetOpen();
 	const closeQueueSheet = usePlayerUIStore((state) => state.closeQueueSheet);
 
-	const bypassFreeze = useDiagnosticStore((state) => state.bypassFreeze);
 	const bypassPortal = useDiagnosticStore((state) => state.bypassPortal);
 	const bypassSplash = useDiagnosticStore((state) => state.bypassSplash);
 
@@ -142,8 +141,12 @@ function AppContent() {
 					isDark={isDark}
 				/>
 			)}
-			<TouchProbe />
-			<DiagnosticHud />
+			{__DEV__ && (
+				<>
+					<TouchProbe />
+					<DiagnosticHud />
+				</>
+			)}
 		</View>
 	);
 }

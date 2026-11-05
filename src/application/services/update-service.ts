@@ -7,10 +7,10 @@ const logger = getLogger('UpdateService');
 
 // The raw package.json URL on your GitHub repository (CDN cached, no rate limits)
 const REMOTE_PACKAGE_JSON_URL =
-	'https://raw.githubusercontent.com/akhilraghavakurup-beep/kurmusic/main/package.json';
+	'https://raw.githubusercontent.com/mymovies4ever/kurmusic/main/package.json';
 
 const GITHUB_RELEASES_API_URL =
-	'https://api.github.com/repos/akhilraghavakurup-beep/kurmusic/releases/latest';
+	'https://api.github.com/repos/mymovies4ever/kurmusic/releases/latest';
 
 // Local version of the app from package.json
 const LOCAL_VERSION = require('../../../package.json').version;
@@ -50,7 +50,7 @@ export async function checkForUpdates(): Promise<UpdateInfo> {
 			const releaseAsset = releaseData.assets?.find((a) => a.name.includes('-release.apk'));
 			const downloadUrl =
 				releaseAsset?.browser_download_url ??
-				`https://github.com/akhilraghavakurup-beep/kurmusic/releases/download/v${latestVersion}/kurmusic-${latestVersion}-release.apk`;
+				`https://github.com/mymovies4ever/kurmusic/releases/download/v${latestVersion}/kurmusic-${latestVersion}-release.apk`;
 
 			const hasUpdate = isNewerVersion(latestVersion, LOCAL_VERSION);
 
@@ -73,7 +73,7 @@ export async function checkForUpdates(): Promise<UpdateInfo> {
 		const data = (await packageResponse.json()) as { version: string };
 		const latestVersion = data.version;
 		const hasUpdate = isNewerVersion(latestVersion, LOCAL_VERSION);
-		const downloadUrl = `https://github.com/akhilraghavakurup-beep/kurmusic/releases/download/v${latestVersion}/kurmusic-${latestVersion}-release.apk`;
+		const downloadUrl = `https://github.com/mymovies4ever/kurmusic/releases/download/v${latestVersion}/kurmusic-${latestVersion}-release.apk`;
 
 		return {
 			hasUpdate,

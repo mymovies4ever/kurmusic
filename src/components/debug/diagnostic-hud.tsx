@@ -92,7 +92,7 @@ export function DiagnosticHud() {
 			{/* Floating Top Diagnostic Pill */}
 			<View
 				style={[styles.floatingContainer, { top: Math.max(insets.top, 8) }]}
-				pointerEvents="box-none"
+				pointerEvents={'box-none'}
 			>
 				<Pressable style={styles.floatingPill} onPress={() => setPanelOpen(true)}>
 					<View
@@ -111,8 +111,8 @@ export function DiagnosticHud() {
 			{/* Full Control Center Modal */}
 			<Modal
 				visible={isPanelOpen}
-				animationType="slide"
-				presentationStyle="pageSheet"
+				animationType={'slide'}
+				presentationStyle={'pageSheet'}
 				onRequestClose={() => setPanelOpen(false)}
 			>
 				<SafeAreaView style={styles.modalContainer}>
