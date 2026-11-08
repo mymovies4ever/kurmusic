@@ -56,7 +56,11 @@
 								"META-INF/LICENSE",
 								"META-INF/NOTICE",
 								"META-INF/LICENSE.txt",
-								"META-INF/NOTICE.txt"
+								"META-INF/NOTICE.txt",
+								"META-INF/*.version",
+								"META-INF/*.kotlin_module",
+								"META-INF/proguard/*",
+								"META-INF/com.android.tools/*"
 							]
 						}
 					}

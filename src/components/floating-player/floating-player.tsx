@@ -87,11 +87,17 @@ export function FloatingPlayer() {
 		router.push('/player');
 	}, []);
 
+	const handleDismiss = useCallback(() => {
+		playbackService.stop().catch(() => {});
+	}, []);
+
 	const swipeResponder = useMemo(
 		() =>
 			PanResponder.create({
 				onMoveShouldSetPanResponder: (_event, gestureState) =>
 					Math.abs(gestureState.dx) > 14 || Math.abs(gestureState.dy) > 14,
+				onMoveShouldSetPanResponderCapture: (_event, gestureState) =>
+					Math.abs(gestureState.dy) > 18 || Math.abs(gestureState.dx) > 18,
 				onPanResponderMove: (_event, gestureState) => {
 					if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
 						translateX.value = gestureState.dx * 0.4;
@@ -117,10 +123,10 @@ export function FloatingPlayer() {
 						router.push('/player');
 						translateY.value = withSpring(0, { damping: 18, stiffness: 220 });
 					} else if (gestureState.dy > 30 || gestureState.vy > 0.4) {
-						// Swiped Down -> Dismiss Mini Player & Stop Playback
+						// Swiped Down -> Dismiss Mini Player & Stop Playback (safe JS callback)
 						translateY.value = withTiming(160, { duration: 180 }, (finished) => {
 							if (finished) {
-								runOnJS(playbackService.stop)();
+								runOnJS(handleDismiss)();
 							}
 						});
 					} else {
@@ -133,15 +139,15 @@ export function FloatingPlayer() {
 					translateY.value = withSpring(0, { damping: 18, stiffness: 220 });
 				},
 			}),
-		[translateX, translateY]
+		[translateX, translateY, handleDismiss]
 	);
 
 	if (!isVisible && !shouldShow) {
 		return <View style={styles.hidden} />;
 	}
 
-	const glassBgColor = isDark ? 'rgba(12, 12, 16, 0.72)' : 'rgba(255, 255, 255, 0.85)';
-	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.08)';
+	const glassBgColor = isDark ? 'rgba(16, 16, 22, 0.65)' : 'rgba(255, 255, 255, 0.82)';
+	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.08)';
 
 	return (
 		<Animated.View
@@ -158,7 +164,7 @@ export function FloatingPlayer() {
 			{...swipeResponder.panHandlers}
 		>
 			<BlurView
-				intensity={80}
+				intensity={85}
 				tint={isDark ? 'dark' : 'light'}
 				experimentalBlurMethod={'dimezisBlurView'}
 				style={[StyleSheet.absoluteFill, { backgroundColor: glassBgColor }]}

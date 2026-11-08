@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { Tabs, router } from 'expo-router';
-import { View, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Text, IconButton } from 'react-native-paper';
-import { LanguagesIcon, SettingsIcon } from 'lucide-react-native';
+import { LanguagesIcon } from 'lucide-react-native';
 import { useAppTheme, resolveDisplayFont } from '@/lib/theme';
 import { useActiveDownloadsCount } from '@/src/application/state/download-store';
 import {
@@ -22,11 +22,8 @@ import { LottieTabIcon } from '@/src/components/ui/lottie-tab-icon';
 import { StaticTabIcon } from '@/src/components/ui/static-tab-icon';
 import { Icon } from '@/src/components/ui/icon';
 
-const TAB_WIDTH = 72;
-const TAB_GAP = 12;
-const INDICATOR_WIDTH = 64;
 const INDICATOR_HEIGHT = 32;
-const INDICATOR_TOP = 11;
+const INDICATOR_TOP = 10;
 
 const TAB_SPRING_CONFIG = { damping: 20, stiffness: 200, mass: 0.5 };
 
@@ -101,10 +98,18 @@ export default function TabLayout() {
 			<TabHeader initialTabId={validTabOrder[0]} />
 			<Tabs screenOptions={screenOptions} tabBar={renderTabBar}>
 				<Tabs.Screen name={'index'} options={{ href: null }} />
-				{validTabOrder.map((tabId) => {
-					const config = TAB_CONFIG[tabId];
-					if (!config) return null;
-					return <Tabs.Screen key={tabId} name={tabId} options={config} />;
+				{Object.entries(TAB_CONFIG).map(([tabId, config]) => {
+					const isEnabled = validTabOrder.includes(tabId as TabId);
+					return (
+						<Tabs.Screen
+							key={tabId}
+							name={tabId}
+							options={{
+								...config,
+								href: isEnabled ? undefined : null,
+							}}
+						/>
+					);
 				})}
 			</Tabs>
 		</View>
@@ -137,13 +142,6 @@ function TabHeader({ initialTabId }: { readonly initialTabId: TabId }) {
 				]}
 			>
 				<View style={styles.headerActions}>
-					<IconButton
-						icon={() => (
-							<Icon as={SettingsIcon} size={22} color={colors.onSurfaceVariant} />
-						)}
-						onPress={() => router.push('/settings')}
-						accessibilityLabel={'Settings'}
-					/>
 					{isHomeFeed && (
 						<IconButton
 							icon={() => (
@@ -203,16 +201,20 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 	const uiStyle = useUIStyle();
 	const isGlass = uiStyle === 'glass';
 	const insets = useSafeAreaInsets();
+	const { width: windowWidth } = useWindowDimensions();
 	const activeDownloadsCount = useActiveDownloadsCount();
 	const tabBarHeight = TAB_BAR_HEIGHT + insets.bottom;
 
-	const glassBgColor = isDark ? 'rgba(12, 12, 16, 0.70)' : 'rgba(255, 255, 255, 0.85)';
+	const glassBgColor = isDark ? 'rgba(16, 16, 22, 0.58)' : 'rgba(255, 255, 255, 0.82)';
 	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.08)';
+
+	const tabCount = Math.max(1, tabOrder.length);
+	const tabWidth = windowWidth / tabCount;
+	const indicatorWidth = Math.min(56, tabWidth - 10);
 
 	const currentRouteName = state.routes[state.index]?.name as TabId;
 	const visualIndex = tabOrder.indexOf(currentRouteName);
-	const initialX =
-		Math.max(0, visualIndex) * (TAB_WIDTH + TAB_GAP) + (TAB_WIDTH - INDICATOR_WIDTH) / 2;
+	const initialX = Math.max(0, visualIndex) * tabWidth + (tabWidth - indicatorWidth) / 2;
 
 	const indicatorX = useSharedValue(initialX);
 
@@ -220,14 +222,14 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 		onActiveTabChange(currentRouteName);
 		const newVisualIndex = tabOrder.indexOf(currentRouteName);
 		if (newVisualIndex >= 0) {
-			const newX = newVisualIndex * (TAB_WIDTH + TAB_GAP) + (TAB_WIDTH - INDICATOR_WIDTH) / 2;
+			const newX = newVisualIndex * tabWidth + (tabWidth - indicatorWidth) / 2;
 			indicatorX.value = withSpring(newX, {
-				damping: 25,
-				stiffness: 180,
+				damping: 24,
+				stiffness: 190,
 				mass: 0.5,
 			});
 		}
-	}, [currentRouteName, tabOrder, indicatorX, onActiveTabChange]);
+	}, [currentRouteName, tabOrder, tabWidth, indicatorWidth, indicatorX, onActiveTabChange]);
 
 	const animatedIndicatorStyle = useAnimatedStyle(() => {
 		return {
@@ -237,10 +239,10 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 
 	const handleTabPress = useCallback(
 		(visualIdx: number, routeIndex: number, routeName: string) => {
-			const newX = visualIdx * (TAB_WIDTH + TAB_GAP) + (TAB_WIDTH - INDICATOR_WIDTH) / 2;
+			const newX = visualIdx * tabWidth + (tabWidth - indicatorWidth) / 2;
 			indicatorX.value = withSpring(newX, {
-				damping: 25,
-				stiffness: 180,
+				damping: 24,
+				stiffness: 190,
 				mass: 0.5,
 			});
 
@@ -254,14 +256,14 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 				navigation.navigate(routeName);
 			}
 		},
-		[navigation, state.routes, indicatorX]
+		[navigation, state.routes, indicatorX, tabWidth, indicatorWidth]
 	);
 
 	return (
 		<View style={styles.tabBarContainer}>
 			{isGlass && (
 				<BlurView
-					intensity={80}
+					intensity={85}
 					tint={isDark ? 'dark' : 'light'}
 					experimentalBlurMethod={'dimezisBlurView'}
 					style={[
@@ -289,11 +291,12 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 						style={[
 							styles.indicator,
 							{
+								width: indicatorWidth,
 								backgroundColor: isGlass
-									? `${colors.primary}28`
+									? `${colors.primary}25`
 									: colors.secondaryContainer,
 								borderWidth: isGlass ? 1 : 0,
-								borderColor: isGlass ? `${colors.primary}55` : 'transparent',
+								borderColor: isGlass ? `${colors.primary}50` : 'transparent',
 								top: INDICATOR_TOP,
 							},
 							animatedIndicatorStyle,
@@ -418,40 +421,41 @@ const styles = StyleSheet.create({
 		textAlign: 'center',
 	},
 	tabBarContainer: {
-		position: 'relative',
+		position: 'absolute',
+		bottom: 0,
+		left: 0,
+		right: 0,
+		zIndex: 20,
 	},
 	tabBar: {
 		flexDirection: 'row',
-		justifyContent: 'center',
-		alignItems: 'center',
 		borderTopWidth: 0,
 		elevation: 0,
 		shadowColor: '#000',
-		shadowOffset: { width: 0, height: -1 },
-		shadowOpacity: 0.1,
-		shadowRadius: 4,
+		shadowOffset: { width: 0, height: -2 },
+		shadowOpacity: 0.15,
+		shadowRadius: 8,
 	},
 	tabsContainer: {
+		flex: 1,
 		flexDirection: 'row',
-		gap: TAB_GAP,
 	},
 	indicator: {
 		position: 'absolute',
 		left: 0,
-		width: INDICATOR_WIDTH,
 		height: INDICATOR_HEIGHT,
 		borderRadius: 16,
 	},
 	tabButton: {
-		width: 72,
+		flex: 1,
 		alignItems: 'center',
 		justifyContent: 'center',
 		height: TAB_BAR_HEIGHT,
-		gap: 6,
+		gap: 4,
 	},
 	tabLabel: {
 		fontSize: 11,
-		fontWeight: '500',
+		fontWeight: '600',
 		width: '100%',
 		textAlign: 'center',
 	},

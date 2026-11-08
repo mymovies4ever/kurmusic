@@ -142,16 +142,16 @@ export const GlassColors = {
 		glassScrim: 'rgba(0, 0, 0, 0.1)',
 	},
 	dark: {
-		glassSurface: 'rgba(28, 27, 31, 0.72)',
-		glassBorder: 'rgba(255, 255, 255, 0.12)',
-		glassHighlight: 'rgba(255, 255, 255, 0.18)',
-		glassScrim: 'rgba(0, 0, 0, 0.45)',
+		glassSurface: 'rgba(16, 16, 22, 0.58)',
+		glassBorder: 'rgba(255, 255, 255, 0.16)',
+		glassHighlight: 'rgba(255, 255, 255, 0.22)',
+		glassScrim: 'rgba(0, 0, 0, 0.40)',
 	},
 	oled: {
-		glassSurface: 'rgba(10, 10, 10, 0.78)',
-		glassBorder: 'rgba(255, 255, 255, 0.14)',
-		glassHighlight: 'rgba(255, 255, 255, 0.22)',
-		glassScrim: 'rgba(0, 0, 0, 0.65)',
+		glassSurface: 'rgba(8, 8, 12, 0.65)',
+		glassBorder: 'rgba(255, 255, 255, 0.18)',
+		glassHighlight: 'rgba(255, 255, 255, 0.25)',
+		glassScrim: 'rgba(0, 0, 0, 0.55)',
 	},
 } as const;
 

@@ -10,6 +10,7 @@ import {
 	useSettingsStore,
 	type HomeFeedPrioritySection,
 } from '@/src/application/state/settings-store';
+import { useHistoryStore } from '@/src/application/state/history-store';
 import type {
 	JioSaavnLaunchData,
 	JioSaavnLaunchModule,
@@ -274,6 +275,30 @@ function createSection(
 	};
 }
 
+function getFallbackTitleForModule(key: string): string {
+	switch (key) {
+		case 'new_trending':
+			return 'Trending Now';
+		case 'charts':
+			return 'Top Charts';
+		case 'new_albums':
+			return 'New Releases';
+		case 'top_playlists':
+			return 'Editorial Picks';
+		case 'city_mod':
+			return 'Hot Around You';
+		case 'tag_mixes':
+			return 'Mixes For You';
+		case 'fresh-hits':
+		case 'promo:fresh-hits':
+			return 'Fresh Hits';
+		default: {
+			const cleaned = key.replace(/^(promo:|jiosaavn-|_)/, '').replace(/[-_]/g, ' ');
+			return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+		}
+	}
+}
+
 function getModuleOrder(modules?: Record<string, JioSaavnLaunchModule>): string[] {
 	if (!modules) {
 		return [];
@@ -480,9 +505,30 @@ async function buildHomeFeed(client: JioSaavnClient, language?: string): Promise
 
 	const processedModuleKeys = new Set<string>();
 
-	for (const moduleKey of [...collectionOrder, ...promoCollectionOrder]) {
+	const allModuleKeys = [
+		...collectionOrder,
+		...promoCollectionOrder,
+		...(launchData.modules
+			? Object.keys(launchData.modules).filter(
+					(k) => !collectionOrder.includes(k) && !promoCollectionOrder.includes(k)
+				)
+			: []),
+		...BLACKHOLE_COLLECTION_ORDER.filter(
+			(k) =>
+				!collectionOrder.includes(k) &&
+				!promoCollectionOrder.includes(k) &&
+				Array.isArray(launchData[k]) &&
+				(launchData[k] as unknown[]).length > 0
+		),
+	];
+
+	for (const moduleKey of allModuleKeys) {
+		if (processedModuleKeys.has(moduleKey)) {
+			continue;
+		}
+
 		const module = launchData.modules?.[moduleKey];
-		const title = module?.title?.trim();
+		const title = module?.title?.trim() || getFallbackTitleForModule(moduleKey);
 		const items = launchData[moduleKey];
 
 		if (!title || !Array.isArray(items) || items.length === 0) {
@@ -498,6 +544,10 @@ async function buildHomeFeed(client: JioSaavnClient, language?: string): Promise
 		);
 
 		const mappedItems = definition ? definition.mapItems(items) : mapAnyFeedItems(items);
+		if (mappedItems.length === 0) {
+			continue;
+		}
+
 		const section = createSection(
 			moduleKey,
 			title,
@@ -508,6 +558,41 @@ async function buildHomeFeed(client: JioSaavnClient, language?: string): Promise
 			sections.push(section);
 		}
 		processedModuleKeys.add(moduleKey);
+	}
+
+	// ── Dynamic user recommendations shelf from recent listening ─────────────
+	try {
+		const recent = useHistoryStore.getState().getRecentTracks(1);
+		if (recent.length > 0 && recent[0]) {
+			const seed = recent[0];
+			const seedId = seed.id.value.replace(/^[^:]+:/, '');
+			if (seedId) {
+				const recos = await client.getSongSuggestions(seedId, 15, language);
+				if (Array.isArray(recos) && recos.length > 0) {
+					const mappedRecos: FeedItem[] = recos
+						.map((song) => {
+							const track = mapSong(song);
+							return track
+								? ({ type: 'track' as const, data: track } as FeedItem)
+								: null;
+						})
+						.filter((item): item is FeedItem => item !== null);
+					if (mappedRecos.length > 0) {
+						const recoSection = createSection(
+							'recommended-for-you',
+							'Recommended For You',
+							mappedRecos,
+							`Inspired by ${seed.title}`
+						);
+						if (recoSection) {
+							sections.unshift(recoSection);
+						}
+					}
+				}
+			}
+		}
+	} catch {
+		// Non-critical, fallback to standard sections
 	}
 
 	if (

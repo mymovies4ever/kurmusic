@@ -2,6 +2,9 @@ name: Build Test APK
 
 on:
     workflow_dispatch:
+    push:
+        branches:
+            - test-build
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -11,6 +14,8 @@ jobs:
     build-android:
         name: Build ARM64 Release APK
         runs-on: ubuntu-latest
+        permissions:
+            contents: write
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
@@ -104,6 +109,29 @@ jobs:
                   path: build-artifacts/*.apk
                   retention-days: 30
                   if-no-files-found: error
+
+            - name: Rename APK for preview download
+              run: |
+                  APK_FILE=$(find build-artifacts -name "*.apk" | head -n 1)
+                  if [ -n "$APK_FILE" ]; then
+                    cp "$APK_FILE" build-artifacts/kurmusic-test-preview.apk
+                  fi
+
+            - name: Publish Test Pre-release (No OTA)
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: test-build
+                  name: KurMusic Test Preview (No OTA)
+                  body: |
+                      ### KurMusic Test Build (No OTA)
+                      This is an experimental standalone test build for validating Glassmorphism, Settings as a Tab, Mini-Player swipe dismiss, and optimizations.
+
+                      *Note: This is a pre-release and will NOT trigger in-app OTA notifications.*
+                  files: build-artifacts/kurmusic-test-preview.apk
+                  draft: false
+                  prerelease: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     build-summary:
         name: Build Summary

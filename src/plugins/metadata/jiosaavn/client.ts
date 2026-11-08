@@ -29,8 +29,15 @@ export interface JioSaavnClientConfig {
 const WEB_API_BASE_URL = 'https://www.jiosaavn.com';
 const WEB_API_PATH = '/api.php?_format=json&_marker=0&api_version=4&ctx=web6dot0';
 
+interface CacheEntry<T> {
+	data: T;
+	expiresAt: number;
+}
+
 export class JioSaavnClient {
 	private readonly baseUrl: string;
+	private readonly _cache = new Map<string, CacheEntry<unknown>>();
+	private readonly _inFlightRequests = new Map<string, Promise<unknown>>();
 
 	constructor(config: JioSaavnClientConfig) {
 		this.baseUrl = config.baseUrl.replace(/\/+$/, '');
@@ -331,6 +338,24 @@ export class JioSaavnClient {
 		return songs;
 	}
 
+	private _getCached<T>(key: string): T | null {
+		const entry = this._cache.get(key);
+		if (!entry) return null;
+		if (Date.now() > entry.expiresAt) {
+			this._cache.delete(key);
+			return null;
+		}
+		return entry.data as T;
+	}
+
+	private _setCached<T>(key: string, data: T, ttlMs = 5 * 60 * 1000): void {
+		if (this._cache.size > 150) {
+			const oldestKey = this._cache.keys().next().value;
+			if (oldestKey) this._cache.delete(oldestKey);
+		}
+		this._cache.set(key, { data, expiresAt: Date.now() + ttlMs });
+	}
+
 	private async _get<T>(
 		path: string,
 		params: Record<string, string | number | undefined>,
@@ -343,29 +368,50 @@ export class JioSaavnClient {
 			}
 		}
 
-		const response = await fetch(url.toString(), {
-			method: 'GET',
-			headers: { Accept: 'application/json' },
-			signal,
-		});
-
-		if (!response.ok) {
-			throw new Error(`JioSaavn API request failed: ${response.status}`);
+		const cacheKey = `api:${url.toString()}`;
+		const cached = this._getCached<T>(cacheKey);
+		if (cached) {
+			return cached;
 		}
 
-		const payload = (await response.json()) as JioSaavnApiResponse<T>;
-		if (!payload.success) {
-			logger.warn(`JioSaavn request returned unsuccessful payload for ${path}`);
-			throw new Error('JioSaavn API returned an unsuccessful response');
+		const existing = this._inFlightRequests.get(cacheKey);
+		if (existing) {
+			return existing as Promise<T>;
 		}
 
-		return payload.data;
+		const requestPromise = (async () => {
+			try {
+				const response = await fetch(url.toString(), {
+					method: 'GET',
+					headers: { Accept: 'application/json' },
+					signal,
+				});
+
+				if (!response.ok) {
+					throw new Error(`JioSaavn API request failed: ${response.status}`);
+				}
+
+				const payload = (await response.json()) as JioSaavnApiResponse<T>;
+				if (!payload.success) {
+					logger.warn(`JioSaavn request returned unsuccessful payload for ${path}`);
+					throw new Error('JioSaavn API returned an unsuccessful response');
+				}
+
+				this._setCached(cacheKey, payload.data, 5 * 60 * 1000);
+				return payload.data;
+			} finally {
+				this._inFlightRequests.delete(cacheKey);
+			}
+		})();
+
+		this._inFlightRequests.set(cacheKey, requestPromise);
+		return requestPromise;
 	}
 
 	private async _webGet<T>(
 		call: string,
 		params: Record<string, string | number | undefined>,
-		options: { language?: string; signal?: AbortSignal } = {}
+		options: { language?: string; signal?: AbortSignal; ttlMs?: number } = {}
 	): Promise<T> {
 		const url = new URL(`${WEB_API_BASE_URL}${WEB_API_PATH}`);
 		url.searchParams.set('__call', call);
@@ -380,22 +426,45 @@ export class JioSaavnClient {
 			}
 		}
 
-		const response = await fetch(url.toString(), {
-			method: 'GET',
-			headers: {
-				Accept: 'application/json, text/plain, */*',
-				'User-Agent':
-					'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
-				cookie: this._buildLanguageCookie(options.language),
-			},
-			signal: options.signal,
-		});
-
-		if (!response.ok) {
-			throw new Error(`JioSaavn web API request failed: ${response.status}`);
+		const cacheKey = `web:${url.toString()}:${options.language ?? ''}`;
+		const cached = this._getCached<T>(cacheKey);
+		if (cached) {
+			return cached;
 		}
 
-		return (await response.json()) as T;
+		const existing = this._inFlightRequests.get(cacheKey);
+		if (existing) {
+			return existing as Promise<T>;
+		}
+
+		const requestPromise = (async () => {
+			try {
+				const response = await fetch(url.toString(), {
+					method: 'GET',
+					headers: {
+						Accept: 'application/json, text/plain, */*',
+						'User-Agent':
+							'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+						cookie: this._buildLanguageCookie(options.language),
+					},
+					signal: options.signal,
+				});
+
+				if (!response.ok) {
+					throw new Error(`JioSaavn web API request failed: ${response.status}`);
+				}
+
+				const data = (await response.json()) as T;
+				const defaultTtl = call.includes('LaunchData') ? 5 * 60 * 1000 : 10 * 60 * 1000;
+				this._setCached(cacheKey, data, options.ttlMs ?? defaultTtl);
+				return data;
+			} finally {
+				this._inFlightRequests.delete(cacheKey);
+			}
+		})();
+
+		this._inFlightRequests.set(cacheKey, requestPromise);
+		return requestPromise;
 	}
 
 	private _buildLanguageCookie(language?: string): string {

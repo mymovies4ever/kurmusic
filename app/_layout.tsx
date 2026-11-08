@@ -98,7 +98,7 @@ function AppContent() {
 				<Stack.Screen name={'playlist/[id]'} />
 				<Stack.Screen name={'remote-playlist/[id]'} />
 				<Stack.Screen name={'profile'} />
-				<Stack.Screen name={'settings'} options={{ presentation: 'modal' }} />
+				<Stack.Screen name={'settings'} />
 				<Stack.Screen name={'add-to-playlist'} options={{ presentation: 'modal' }} />
 			</Stack>
 			<FloatingPlayer />
