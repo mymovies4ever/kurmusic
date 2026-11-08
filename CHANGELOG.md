@@ -2,7 +2,7 @@
 
 All notable changes to the Kur Music application are documented in this file.
 
-## [1.2.7] - 2026-11-08
+## [1.2.8] - 2026-11-08
 
 ### ✨ Features
 
