@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Sparkles, X, Headphones, PlayCircle, User, Music } from 'lucide-react-native';
 import { useHistoryStore } from '../../application/state/history-store';
 import { usePlayerStore } from '../../application/state/player-store';
 import { playbackService } from '../../application/services/playback-service';
@@ -48,11 +48,11 @@ export const KurRewindModal: React.FC<KurRewindModalProps> = ({ visible, onClose
 				{/* Header */}
 				<View style={styles.header}>
 					<View style={styles.headerTitleRow}>
-						<Ionicons name={'sparkles'} size={24} color={'#8A2BE2'} />
+						<Sparkles size={24} color={'#8A2BE2'} />
 						<Text style={styles.headerTitle}>Kur Rewind</Text>
 					</View>
 					<TouchableOpacity onPress={onClose} style={styles.closeButton}>
-						<Ionicons name={'close'} size={24} color={'#FFFFFF'} />
+						<X size={24} color={'#FFFFFF'} />
 					</TouchableOpacity>
 				</View>
 
@@ -62,7 +62,7 @@ export const KurRewindModal: React.FC<KurRewindModalProps> = ({ visible, onClose
 				>
 					{/* Stat Card 1: Total Minutes */}
 					<View style={styles.heroCard}>
-						<Ionicons name={'headset-outline'} size={32} color={'#A855F7'} />
+						<Headphones size={32} color={'#A855F7'} />
 						<Text style={styles.heroStatNumber}>{totalMinutes}</Text>
 						<Text style={styles.heroStatLabel}>Minutes of Music Listened</Text>
 					</View>
@@ -73,7 +73,7 @@ export const KurRewindModal: React.FC<KurRewindModalProps> = ({ visible, onClose
 							style={styles.dailyMixButton}
 							onPress={handlePlayDailyMix}
 						>
-							<Ionicons name={'play-circle'} size={28} color={'#FFFFFF'} />
+							<PlayCircle size={28} color={'#FFFFFF'} />
 							<View style={styles.dailyMixTextCol}>
 								<Text style={styles.dailyMixTitle}>Play Your Daily Mix</Text>
 								<Text style={styles.dailyMixSubtitle}>
@@ -112,11 +112,7 @@ export const KurRewindModal: React.FC<KurRewindModalProps> = ({ visible, onClose
 															styles.placeholderAvatar,
 														]}
 													>
-														<Ionicons
-															name={'person'}
-															size={28}
-															color={'#94A3B8'}
-														/>
+														<User size={28} color={'#94A3B8'} />
 													</View>
 												)}
 												<Text style={styles.artistName} numberOfLines={1}>
@@ -158,11 +154,7 @@ export const KurRewindModal: React.FC<KurRewindModalProps> = ({ visible, onClose
 													styles.placeholderAvatar,
 												]}
 											>
-												<Ionicons
-													name={'musical-notes'}
-													size={20}
-													color={'#94A3B8'}
-												/>
+												<Music size={20} color={'#94A3B8'} />
 											</View>
 										)}
 										<View style={styles.trackInfo}>

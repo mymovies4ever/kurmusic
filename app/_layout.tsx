@@ -31,18 +31,9 @@ import {
 	usePlayerUIStore,
 } from '@/src/application/state/player-ui-store';
 import { enableFreeze } from 'react-native-screens';
-import { debugLogger } from '@/src/shared/services/debug-logger';
-import { freezeWatchdog } from '@/src/shared/services/freeze-watchdog';
-import { useDiagnosticStore } from '@/src/application/state/diagnostic-store';
-import { TouchProbe } from '@/src/components/debug/touch-probe';
-import { DiagnosticHud } from '@/src/components/debug/diagnostic-hud';
 
 const PORTAL_Z_INDEX = 9999;
 
-if (__DEV__) {
-	debugLogger.init();
-	freezeWatchdog.start();
-}
 SplashScreen.hide();
 lazyBootstrap();
 enableFreeze(false);
@@ -57,9 +48,6 @@ function AppContent() {
 	const closeSleepTimerSheet = usePlayerUIStore((state) => state.closeSleepTimerSheet);
 	const queueSheetOpen = useQueueSheetOpen();
 	const closeQueueSheet = usePlayerUIStore((state) => state.closeQueueSheet);
-
-	const bypassPortal = useDiagnosticStore((state) => state.bypassPortal);
-	const bypassSplash = useDiagnosticStore((state) => state.bypassSplash);
 
 	useEffect(() => {
 		enableFreeze(false);
@@ -116,36 +104,24 @@ function AppContent() {
 			</Stack>
 			<DynamicIsland />
 			<FloatingPlayer />
-			{!bypassPortal && (
-				<>
-					<QueueSheet isOpen={queueSheetOpen} onClose={closeQueueSheet} />
-					<SleepTimerSheet isOpen={sleepTimerSheetOpen} onClose={closeSleepTimerSheet} />
-					<TrackOptionsSheet />
-					<TagEditorSheet />
-				</>
-			)}
+			<QueueSheet isOpen={queueSheetOpen} onClose={closeQueueSheet} />
+			<SleepTimerSheet isOpen={sleepTimerSheetOpen} onClose={closeSleepTimerSheet} />
+			<TrackOptionsSheet />
+			<TagEditorSheet />
 			<ToastContainer />
 			<AutoUpdateDialog />
 			<ScanProgressToast />
 			<ImportProgressToast />
 			<StatusBar style={isDark ? 'light' : 'dark'} />
-			{!bypassPortal && (
-				<View style={styles.portalHost} pointerEvents={'box-none'}>
-					<PortalHost />
-				</View>
-			)}
-			{showSplash && !bypassSplash && (
+			<View style={styles.portalHost} pointerEvents={'box-none'}>
+				<PortalHost />
+			</View>
+			{showSplash && (
 				<AnimatedSplash
 					isReady={isReady}
 					onAnimationComplete={handleSplashComplete}
 					isDark={isDark}
 				/>
-			)}
-			{__DEV__ && (
-				<>
-					<TouchProbe />
-					<DiagnosticHud />
-				</>
 			)}
 		</View>
 	);

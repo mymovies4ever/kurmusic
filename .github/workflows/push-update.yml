@@ -81,7 +81,7 @@ jobs:
                   git config user.name "github-actions[bot]"
                   git config user.email "github-actions[bot]@users.noreply.github.com"
                   git add -A
-                  git diff --staged --quiet || (git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" && git push origin HEAD:main --force)
+                  git diff --staged --quiet || (git commit -m "chore: bump version to ${{ steps.version.outputs.version }} [skip ci]" && git push origin HEAD:main --force)
 
             - name: Run quality checks
               run: |
@@ -112,22 +112,27 @@ jobs:
                   distribution: 'temurin'
                   java-version: '17'
 
+            - name: Setup Gradle
+              uses: gradle/actions/setup-gradle@v4
+              with:
+                  cache-read-only: false
+
             - name: Setup Android SDK
               uses: android-actions/setup-android@v3
               with:
                   packages: 'platform-tools'
 
-            - name: Install Ninja
+            - name: Install Ninja & ccache
               run: |
-                  if command -v ninja &> /dev/null; then
-                    echo "Ninja already installed"
-                    exit 0
-                  fi
-                  if command -v apt-get &> /dev/null; then
-                    sudo apt-get update && sudo apt-get install -y ninja-build
-                  elif command -v brew &> /dev/null; then
-                    brew install ninja
-                  fi
+                  sudo apt-get update -qq && sudo apt-get install -y -qq ninja-build ccache
+
+            - name: Restore ccache
+              uses: actions/cache@v4
+              with:
+                  path: /home/runner/.cache/ccache
+                  key: ${{ runner.os }}-ccache-${{ github.sha }}
+                  restore-keys: |
+                      ${{ runner.os }}-ccache-
 
             - name: Install dependencies
               run: npm ci
@@ -137,20 +142,37 @@ jobs:
 
             - name: Tune Gradle memory & packaging options
               run: |
-                  echo "org.gradle.jvmargs=-Xmx4608m -XX:MaxMetaspaceSize=512m -Dkotlin.daemon.jvm.options=-Xmx1536m" >> android/gradle.properties
-                  echo "org.gradle.workers.max=2" >> android/gradle.properties
-                  echo "org.gradle.parallel=false" >> android/gradle.properties
+                  echo "org.gradle.jvmargs=-Xmx4096m -XX:+UseParallelGC -XX:MaxMetaspaceSize=512m -Dkotlin.daemon.jvm.options=-Xmx1536m" >> android/gradle.properties
+                  echo "org.gradle.workers.max=4" >> android/gradle.properties
+                  echo "org.gradle.parallel=true" >> android/gradle.properties
+                  echo "org.gradle.caching=true" >> android/gradle.properties
+                  echo "org.gradle.vfs.watch=false" >> android/gradle.properties
                   echo "android.useFullClasspathForDexingTransform=true" >> android/gradle.properties
                   echo "android.enableR8.fullMode=true" >> android/gradle.properties
                   echo "android.injected.build.abi=arm64-v8a" >> android/gradle.properties
+                  echo "reactNativeArchitectures=arm64-v8a" >> android/gradle.properties
+                  echo "android.lint.analysisPerComponent=false" >> android/gradle.properties
+                  echo "android.experimental.lint.analysisPerComponent=false" >> android/gradle.properties
                   echo "android.packagingOptions.pickFirsts += ['**/libcrypto.so', '**/libssl.so', 'META-INF/*']" >> android/app/build.gradle
                   echo "android.packagingOptions.excludes += ['META-INF/INDEX.LIST', 'META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/NOTICE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE.txt']" >> android/app/build.gradle
-                  echo "android.lintOptions.checkReleaseBuilds = false" >> android/app/build.gradle
-                  echo "android.lintOptions.abortOnError = false" >> android/app/build.gradle
+                  # Completely disable all lint tasks across all subprojects to save 6-8 minutes
+                  cat << 'EOF' >> android/build.gradle
+
+                  allprojects {
+                      tasks.matching { it.name.toLowerCase().contains("lint") }.configureEach {
+                          enabled = false
+                      }
+                  }
+                  EOF
 
             - name: Build Release APK
               working-directory: android
-              run: ./gradlew assembleRelease -x lint -x lintVitalRelease -x lintVitalAnalyzeRelease -PreactNativeArchitectures=arm64-v8a
+              env:
+                  CCACHE_DIR: /home/runner/.cache/ccache
+                  CCACHE_MAXSIZE: 2G
+                  CMAKE_C_COMPILER_LAUNCHER: ccache
+                  CMAKE_CXX_COMPILER_LAUNCHER: ccache
+              run: ./gradlew assembleRelease --build-cache --parallel -x lint -x lintVitalRelease -x lintVitalAnalyzeRelease -PreactNativeArchitectures=arm64-v8a
 
             - name: Upload Release APK
               uses: actions/upload-artifact@v4

@@ -81,9 +81,7 @@ export const FeedCarousel = memo(function FeedCarousel({ section }: FeedCarousel
 		if (!isShuffled) toggleShuffle();
 	}, [trackItems, setQueue, isShuffled, toggleShuffle]);
 
-	const isGlowFlow = uiStyle === 'glow-flow';
 	const isGlass = uiStyle === 'glass';
-	const isBold = uiStyle === 'bold';
 	const isNeo = uiStyle === 'neo';
 	const containerStyle = useMemo(() => {
 		switch (uiStyle) {
@@ -93,37 +91,25 @@ export const FeedCarousel = memo(function FeedCarousel({ section }: FeedCarousel
 					borderColor: colors.outlineVariant,
 					borderWidth: StyleSheet.hairlineWidth,
 				};
-			case 'glass':
-				return {
-					backgroundColor: `${colors.surfaceContainerLow}CC`,
-					borderColor: `${colors.primary}40`,
-					borderWidth: 1,
-				};
-			case 'bold':
-				return {
-					backgroundColor: colors.surfaceContainerHigh,
-					borderColor: colors.primary,
-					borderWidth: 1.4,
-				};
 			case 'neo':
 				return {
 					backgroundColor: colors.surfaceContainerLowest ?? colors.surfaceContainerLow,
 					borderColor: `${colors.primary}80`,
 					borderWidth: 1.1,
 				};
-			case 'glow-flow':
+			case 'glass':
 			default:
 				return {
-					backgroundColor: colors.surfaceContainerLow,
-					borderColor: colors.outlineVariant,
-					borderWidth: StyleSheet.hairlineWidth,
+					backgroundColor: `${colors.surfaceContainerLow}CC`,
+					borderColor: `${colors.primary}40`,
+					borderWidth: 1,
 				};
 		}
 	}, [uiStyle, colors]);
 
 	return (
 		<View style={styles.shell}>
-			{(isGlowFlow || isNeo) && (
+			{isNeo && (
 				<Animated.View
 					pointerEvents={'none'}
 					style={[
@@ -137,7 +123,7 @@ export const FeedCarousel = memo(function FeedCarousel({ section }: FeedCarousel
 					]}
 				/>
 			)}
-			{(isGlowFlow || isNeo) && (
+			{isNeo && (
 				<Animated.View pointerEvents={'none'} style={[styles.sweepMask, sweepStyle]}>
 					<LinearGradient
 						colors={[
@@ -158,7 +144,6 @@ export const FeedCarousel = memo(function FeedCarousel({ section }: FeedCarousel
 					styles.container,
 					containerStyle,
 					isGlass && styles.glassContainer,
-					isBold && styles.boldContainer,
 					isNeo && styles.neoContainer,
 				]}
 			>
@@ -325,10 +310,6 @@ const styles = StyleSheet.create({
 	},
 	glassContainer: {
 		shadowOpacity: 0.08,
-	},
-	boldContainer: {
-		borderRadius: 24,
-		paddingTop: 18,
 	},
 	neoContainer: {
 		borderRadius: 30,

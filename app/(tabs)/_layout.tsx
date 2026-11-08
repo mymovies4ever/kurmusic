@@ -21,8 +21,6 @@ import { TAB_CONFIG, TAB_BAR_HEIGHT } from '@/lib/tab-config';
 import { LottieTabIcon } from '@/src/components/ui/lottie-tab-icon';
 import { StaticTabIcon } from '@/src/components/ui/static-tab-icon';
 import { Icon } from '@/src/components/ui/icon';
-import { useDiagnosticStore } from '@/src/application/state/diagnostic-store';
-import { debugLogger } from '@/src/shared/services/debug-logger';
 
 const TAB_WIDTH = 72;
 const TAB_GAP = 12;
@@ -40,8 +38,6 @@ const activeTabListeners = new Set<ActiveTabListener>();
 
 function emitActiveTab(tabId: TabId): void {
 	activeTabListeners.forEach((fn) => fn(tabId));
-	useDiagnosticStore.getState().setActiveTab(tabId);
-	debugLogger.record('Navigation', 'info', `Tab switched to: ${tabId}`);
 }
 
 function useActiveTabListener(initial: TabId): TabId {

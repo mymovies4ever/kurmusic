@@ -40,13 +40,6 @@
 					}
 				}
 			],
-			[
-				"expo-video",
-				{
-					"supportsBackgroundPlayback": true,
-					"supportsPictureInPicture": true
-				}
-			],
 			"expo-asset",
 			[
 				"expo-build-properties",

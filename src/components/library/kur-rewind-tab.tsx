@@ -9,7 +9,7 @@ import {
 	NativeSyntheticEvent,
 	NativeScrollEvent,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Sparkles, Headphones, PlayCircle, User, Music, BarChart2 } from 'lucide-react-native';
 import { useHistoryStore } from '../../application/state/history-store';
 import { usePlayerStore } from '../../application/state/player-store';
 import { playbackService } from '../../application/services/playback-service';
@@ -55,7 +55,7 @@ export const KurRewindTab: React.FC<KurRewindTabProps> = ({ onScroll }) => {
 		>
 			{/* Header Banner */}
 			<View style={styles.headerBanner}>
-				<Ionicons name={'sparkles'} size={28} color={colors.primary} />
+				<Sparkles size={28} color={colors.primary} />
 				<View>
 					<Text style={[styles.headerBannerTitle, { color: colors.onSurface }]}>
 						Kur Rewind
@@ -68,7 +68,7 @@ export const KurRewindTab: React.FC<KurRewindTabProps> = ({ onScroll }) => {
 
 			{/* Stat Card 1: Total Minutes */}
 			<View style={[styles.heroCard, { backgroundColor: colors.surfaceContainerHigh }]}>
-				<Ionicons name={'headset-outline'} size={36} color={colors.primary} />
+				<Headphones size={36} color={colors.primary} />
 				<Text style={[styles.heroStatNumber, { color: colors.onSurface }]}>
 					{totalMinutes}
 				</Text>
@@ -83,7 +83,7 @@ export const KurRewindTab: React.FC<KurRewindTabProps> = ({ onScroll }) => {
 					style={[styles.dailyMixButton, { backgroundColor: colors.primaryContainer }]}
 					onPress={handlePlayDailyMix}
 				>
-					<Ionicons name={'play-circle'} size={32} color={colors.onPrimaryContainer} />
+					<PlayCircle size={32} color={colors.onPrimaryContainer} />
 					<View style={styles.dailyMixTextCol}>
 						<Text style={[styles.dailyMixTitle, { color: colors.onPrimaryContainer }]}>
 							Play Your Daily Mix
@@ -137,11 +137,7 @@ export const KurRewindTab: React.FC<KurRewindTabProps> = ({ onScroll }) => {
 													},
 												]}
 											>
-												<Ionicons
-													name={'person'}
-													size={28}
-													color={colors.onSurfaceVariant}
-												/>
+												<User size={28} color={colors.onSurfaceVariant} />
 											</View>
 										)}
 										<Text
@@ -192,11 +188,7 @@ export const KurRewindTab: React.FC<KurRewindTabProps> = ({ onScroll }) => {
 											{ backgroundColor: colors.surfaceContainerHigh },
 										]}
 									>
-										<Ionicons
-											name={'musical-notes'}
-											size={20}
-											color={colors.onSurfaceVariant}
-										/>
+										<Music size={20} color={colors.onSurfaceVariant} />
 									</View>
 								)}
 								<View style={styles.trackInfo}>
@@ -222,11 +214,7 @@ export const KurRewindTab: React.FC<KurRewindTabProps> = ({ onScroll }) => {
 				</View>
 			) : (
 				<View style={[styles.emptyBox, { backgroundColor: colors.surfaceContainerLow }]}>
-					<Ionicons
-						name={'stats-chart-outline'}
-						size={40}
-						color={colors.onSurfaceVariant}
-					/>
+					<BarChart2 size={40} color={colors.onSurfaceVariant} />
 					<Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
 						No Listening Data Yet
 					</Text>
