@@ -15,7 +15,7 @@ import Animated, {
 	withSpring,
 	Easing,
 } from 'react-native-reanimated';
-import { AlertCircle, ArrowDown } from 'lucide-react-native';
+import { AlertCircle, ArrowDown, Check } from 'lucide-react-native';
 import { Icon } from '@/src/components/ui/icon';
 import { useDownloadStatus } from '@/src/hooks/use-download-status';
 import { useAppTheme } from '@/lib/theme';
@@ -26,9 +26,9 @@ interface DownloadIndicatorProps {
 }
 
 const SIZE_CONFIG = {
-	sm: { container: 16, icon: 10, offset: -2 },
-	md: { container: 20, icon: 12, offset: -4 },
-	lg: { container: 24, icon: 14, offset: -6 },
+	sm: { container: 18, icon: 11, offset: -3 },
+	md: { container: 22, icon: 13, offset: -4 },
+	lg: { container: 26, icon: 16, offset: -5 },
 };
 
 export const DownloadIndicator = memo(function DownloadIndicator({
@@ -104,7 +104,7 @@ export const DownloadIndicator = memo(function DownloadIndicator({
 		}
 
 		if (isDownloaded) {
-			return <Icon as={ArrowDown} size={config.icon} color={getIconColor()} />;
+			return <Icon as={Check} size={config.icon} color={getIconColor()} />;
 		}
 
 		return null;

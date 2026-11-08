@@ -13,6 +13,7 @@ import {
 	PaletteIcon,
 	SwatchBookIcon,
 	SparklesIcon,
+	SettingsIcon,
 	type LucideIcon,
 } from 'lucide-react-native';
 import type {
@@ -33,9 +34,10 @@ export const THEME_OPTIONS: { value: ThemePreference; label: string; icon: Lucid
 
 export const DEFAULT_TAB_OPTIONS: { value: DefaultTab; label: string; icon: LucideIcon }[] = [
 	{ value: 'feed', label: 'Home', icon: NewspaperIcon },
-	{ value: 'library', label: 'Library', icon: MusicIcon },
 	{ value: 'search', label: 'Search', icon: SearchIcon },
+	{ value: 'library', label: 'Library', icon: MusicIcon },
 	{ value: 'downloads', label: 'Downloads', icon: DownloadIcon },
+	{ value: 'settings', label: 'Settings', icon: SettingsIcon },
 ];
 
 export const HOME_CONTENT_PREFERENCE_OPTIONS: {

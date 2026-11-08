@@ -525,10 +525,15 @@ export async function PlaybackService(): Promise<void> {
 			const playContext = browsePlayContextCache.get(event.mediaId);
 
 			if (playContext) {
+				const trackToPlay = playContext.tracks[playContext.index];
 				logger.debug(
-					`Playing Android Auto browse context at index ${playContext.index} (${playContext.tracks.length} tracks)`
+					`Playing Android Auto browse context at index ${playContext.index} (${playContext.tracks.length} tracks): ${trackToPlay?.title}`
 				);
 				playbackService.setQueue(playContext.tracks, playContext.index);
+				if (trackToPlay) {
+					useHistoryStore.getState().addToHistory(trackToPlay);
+					await playbackService.play(trackToPlay);
+				}
 				return;
 			}
 
@@ -549,14 +554,21 @@ export async function PlaybackService(): Promise<void> {
 			}
 
 			if (index >= 0 && index < appQueue.length) {
-				logger.debug(`Playing from queue at index ${index}`);
+				const trackToPlay = appQueue[index];
+				logger.debug(`Playing from queue at index ${index}: ${trackToPlay?.title}`);
 				playbackService.setQueue(appQueue, index);
+				if (trackToPlay) {
+					useHistoryStore.getState().addToHistory(trackToPlay);
+					await playbackService.play(trackToPlay);
+				}
 			} else {
 				// Not in active queue, check cache
 				const track = browseTrackCache.get(getTrackIdFromAndroidAutoMediaId(event.mediaId));
 				if (track) {
 					logger.debug(`Playing cached track: ${track.title}`);
 					playbackService.setQueue([track], 0);
+					useHistoryStore.getState().addToHistory(track);
+					await playbackService.play(track);
 				} else {
 					logger.warn(`Track not found in queue or cache: ${event.mediaId}`);
 				}

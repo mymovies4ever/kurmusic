@@ -70,7 +70,7 @@ import { permissionService } from '@/src/application/services/permission-service
 import { homeFeedService } from '@/src/application/services/home-feed-service';
 import { resolveDisplayFont, useAppTheme } from '@/lib/theme';
 
-export default function SettingsScreen() {
+export default function SettingsScreen({ isTab = false }: { readonly isTab?: boolean } = {}) {
 	const { homeLanguages } = useLocalSearchParams<{ homeLanguages?: string }>();
 	const { colors } = useAppTheme();
 	const homeContentPreferences = useHomeContentPreferences();
@@ -386,10 +386,15 @@ export default function SettingsScreen() {
 
 	return (
 		<PageLayout
-			header={{
-				title: 'Settings',
-				showBack: true,
-			}}
+			edges={isTab ? [] : undefined}
+			header={
+				isTab
+					? undefined
+					: {
+							title: 'Settings',
+							showBack: true,
+						}
+			}
 		>
 			<PlayerAwareScrollView
 				style={styles.scrollView}
@@ -438,7 +443,7 @@ export default function SettingsScreen() {
 								numberOfLines={2}
 								style={[styles.heroSubtitle, { color: colors.onSurfaceVariant }]}
 							>
-								Version {appVersion} • New Road to Dreams
+								Version {appVersion} • You Are Special
 							</Text>
 						</View>
 					</View>
@@ -690,7 +695,7 @@ export default function SettingsScreen() {
 					<SettingsItem
 						icon={CpuIcon}
 						title={'Audio Engine'}
-						subtitle={'New Road to Dreams (Engine)'}
+						subtitle={'You Are Special (Engine)'}
 					/>
 					<SettingsItem
 						icon={InfoIcon}
@@ -716,71 +721,83 @@ export default function SettingsScreen() {
 				/>
 			)}
 
-			<ConfirmationDialog
-				visible={clearLibraryDialogVisible}
-				title={'Clear library'}
-				message={
-					'This will remove all tracks, playlists, and favorites. This action cannot be undone.'
-				}
-				confirmLabel={'Clear'}
-				cancelLabel={'Cancel'}
-				destructive
-				onConfirm={confirmClearLibrary}
-				onCancel={() => setClearLibraryDialogVisible(false)}
-			/>
+			{clearLibraryDialogVisible && (
+				<ConfirmationDialog
+					visible={clearLibraryDialogVisible}
+					title={'Clear library'}
+					message={
+						'This will remove all tracks, playlists, and favorites. This action cannot be undone.'
+					}
+					confirmLabel={'Clear'}
+					cancelLabel={'Cancel'}
+					destructive
+					onConfirm={confirmClearLibrary}
+					onCancel={() => setClearLibraryDialogVisible(false)}
+				/>
+			)}
 
-			<ConfirmationDialog
-				visible={clearDownloadsDialogVisible}
-				title={'Clear all downloads'}
-				message={'This will remove all downloaded files. This action cannot be undone.'}
-				confirmLabel={'Clear All'}
-				cancelLabel={'Cancel'}
-				destructive
-				onConfirm={confirmClearDownloads}
-				onCancel={() => setClearDownloadsDialogVisible(false)}
-			/>
+			{clearDownloadsDialogVisible && (
+				<ConfirmationDialog
+					visible={clearDownloadsDialogVisible}
+					title={'Clear all downloads'}
+					message={'This will remove all downloaded files. This action cannot be undone.'}
+					confirmLabel={'Clear All'}
+					cancelLabel={'Cancel'}
+					destructive
+					onConfirm={confirmClearDownloads}
+					onCancel={() => setClearDownloadsDialogVisible(false)}
+				/>
+			)}
 
-			<ConfirmationDialog
-				visible={resetSettingsDialogVisible}
-				title={'Reset settings'}
-				message={
-					'This will reset all appearance and navigation preferences to their defaults.'
-				}
-				confirmLabel={'Reset'}
-				cancelLabel={'Cancel'}
-				destructive
-				onConfirm={confirmResetSettings}
-				onCancel={() => setResetSettingsDialogVisible(false)}
-			/>
+			{resetSettingsDialogVisible && (
+				<ConfirmationDialog
+					visible={resetSettingsDialogVisible}
+					title={'Reset settings'}
+					message={
+						'This will reset all appearance and navigation preferences to their defaults.'
+					}
+					confirmLabel={'Reset'}
+					cancelLabel={'Cancel'}
+					destructive
+					onConfirm={confirmResetSettings}
+					onCancel={() => setResetSettingsDialogVisible(false)}
+				/>
+			)}
 
-			<ConfirmationDialog
-				visible={resetEqualizerDialogVisible}
-				title={'Reset equalizer'}
-				message={'This will disable the equalizer and reset all bands to flat.'}
-				confirmLabel={'Reset'}
-				cancelLabel={'Cancel'}
-				destructive
-				onConfirm={confirmResetEqualizer}
-				onCancel={() => setResetEqualizerDialogVisible(false)}
-			/>
+			{resetEqualizerDialogVisible && (
+				<ConfirmationDialog
+					visible={resetEqualizerDialogVisible}
+					title={'Reset equalizer'}
+					message={'This will disable the equalizer and reset all bands to flat.'}
+					confirmLabel={'Reset'}
+					cancelLabel={'Cancel'}
+					destructive
+					onConfirm={confirmResetEqualizer}
+					onCancel={() => setResetEqualizerDialogVisible(false)}
+				/>
+			)}
 
-			<ConfirmationDialog
-				visible={factoryResetDialogVisible}
-				title={'Factory reset'}
-				message={
-					'This will clear all your data including library, downloads, settings, and equalizer. This action cannot be undone.'
-				}
-				confirmLabel={'Reset Everything'}
-				cancelLabel={'Cancel'}
-				destructive
-				onConfirm={confirmFactoryReset}
-				onCancel={() => setFactoryResetDialogVisible(false)}
-			/>
+			{factoryResetDialogVisible && (
+				<ConfirmationDialog
+					visible={factoryResetDialogVisible}
+					title={'Factory reset'}
+					message={
+						'This will clear all your data including library, downloads, settings, and equalizer. This action cannot be undone.'
+					}
+					confirmLabel={'Reset Everything'}
+					cancelLabel={'Cancel'}
+					destructive
+					onConfirm={confirmFactoryReset}
+					onCancel={() => setFactoryResetDialogVisible(false)}
+				/>
+			)}
 
-			<VersionDialog
-				visible={versionDialogVisible}
-				onDismiss={() => setVersionDialogVisible(false)}
-			/>
+			{versionDialogVisible && (
+				<VersionDialog
+					visible={versionDialogVisible}
+					onDismiss={() => setVersionDialogVisible(false)}
+				/>
+			)}
 
 			{homeLanguagesSheetVisible && (
 				<SettingsBottomSheet

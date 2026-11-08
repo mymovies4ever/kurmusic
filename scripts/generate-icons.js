@@ -2,8 +2,8 @@ const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 
-const SVG_PATH = path.join(__dirname, '../assets/icon.svg');
-const SVG_MONOCHROME_PATH = path.join(__dirname, '../assets/icon-monochrome.svg');
+const SVG_PATH = path.join(__dirname, '../assets-src/icon.svg');
+const SVG_MONOCHROME_PATH = path.join(__dirname, '../assets-src/icon-monochrome.svg');
 const OUTPUT_DIR = path.join(__dirname, '../assets/images');
 
 const BACKGROUND_COLOR = { r: 250, g: 253, b: 255, alpha: 1 };
