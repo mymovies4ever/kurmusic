@@ -33,7 +33,8 @@
 		"e2e:ui": "playwright test --ui",
 		"e2e:headed": "playwright test --headed",
 		"e2e:report": "playwright show-report",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"ios": "expo run:ios"
 	},
 	"dependencies": {
 		"@expo/metro-runtime": "~6.1.2",

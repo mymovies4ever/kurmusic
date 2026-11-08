@@ -149,7 +149,6 @@ jobs:
                   echo "org.gradle.vfs.watch=false" >> android/gradle.properties
                   echo "android.useFullClasspathForDexingTransform=true" >> android/gradle.properties
                   echo "android.enableR8.fullMode=true" >> android/gradle.properties
-                  echo "android.injected.build.abi=arm64-v8a" >> android/gradle.properties
                   echo "reactNativeArchitectures=arm64-v8a" >> android/gradle.properties
                   echo "android.lint.analysisPerComponent=false" >> android/gradle.properties
                   echo "android.experimental.lint.analysisPerComponent=false" >> android/gradle.properties
@@ -177,8 +176,10 @@ jobs:
             - name: Prepare APK Artifact
               run: |
                   mkdir -p build-artifacts
-                  find android/app/build/outputs -name "*.apk" -exec cp {} build-artifacts/ \;
-                  echo "Found APK files in build-artifacts:"
+                  echo "=== Searching for generated APK files ==="
+                  find android -name "*.apk"
+                  find android -name "*.apk" -exec cp {} build-artifacts/ \;
+                  echo "=== Content of build-artifacts ==="
                   ls -la build-artifacts/
 
             - name: Upload Release APK
