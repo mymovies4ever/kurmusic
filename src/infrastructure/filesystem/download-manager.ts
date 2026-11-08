@@ -106,6 +106,10 @@ function getArtworkExtension(artworkUrl: string): string {
 async function resolveExternalDirectory(
 	config: ExternalDownloadConfig
 ): Promise<Result<{ uri: string; name: string }, Error>> {
+	if (config.mode === 'internal') {
+		return err(new Error('Internal storage only: external export skipped'));
+	}
+
 	if (Platform.OS !== 'android') {
 		return err(new Error('External download location is only supported on Android'));
 	}

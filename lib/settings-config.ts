@@ -88,11 +88,9 @@ export const PLAYER_BACKGROUND_OPTIONS: {
 ];
 
 export const UI_STYLE_OPTIONS: { value: UIStyle; label: string; icon: LucideIcon }[] = [
-	{ value: 'clean', label: 'Clean', icon: MonitorSmartphoneIcon },
-	{ value: 'glow-flow', label: 'Glow Flow', icon: SwatchBookIcon },
-	{ value: 'glass', label: 'Glass', icon: ImageIcon },
-	{ value: 'bold', label: 'Bold', icon: PaletteIcon },
-	{ value: 'neo', label: 'Neo', icon: SunIcon },
+	{ value: 'glass', label: 'Full Liquid Glass (Default)', icon: SparklesIcon },
+	{ value: 'clean', label: 'Clean M3', icon: MonitorSmartphoneIcon },
+	{ value: 'neo', label: 'Studio Neo', icon: SunIcon },
 ];
 
 export const STREAM_QUALITY_OPTIONS: {

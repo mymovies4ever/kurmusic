@@ -190,12 +190,10 @@ export function AutoUpdateDialog() {
 							style={styles.changelogScroll}
 							showsVerticalScrollIndicator={true}
 						>
-							<Text
-								variant={'bodyMedium'}
-								style={[styles.changelogText, { color: colors.onSurface }]}
-							>
-								{updateInfo.changelog || 'Performance improvements and bug fixes.'}
-							</Text>
+							{renderChangelogContent(
+								updateInfo.changelog || 'Performance improvements and bug fixes.',
+								colors
+							)}
 						</ScrollView>
 					</View>
 
@@ -299,6 +297,83 @@ export function AutoUpdateDialog() {
 	);
 }
 
+function renderChangelogContent(
+	changelog: string,
+	colors: ReturnType<typeof useAppTheme>['colors']
+) {
+	if (!changelog || !changelog.trim()) {
+		return (
+			<Text variant={'bodyMedium'} style={{ color: colors.onSurface }}>
+				Bug fixes and performance improvements.
+			</Text>
+		);
+	}
+
+	const lines = changelog
+		.split(/\r?\n/)
+		.map((l) => l.trim())
+		.filter((l) => l.length > 0 && !l.startsWith('## Downloads') && !l.startsWith('|'));
+
+	return (
+		<View style={styles.changelogList}>
+			{lines.map((line, idx) => {
+				const isHeader = line.startsWith('#') || line.endsWith(':');
+				const cleanLine = line
+					.replace(/^#+\s*/, '')
+					.replace(/^[-*•]\s*/, '')
+					.trim();
+
+				if (isHeader) {
+					const isFeatures = /feat|new|add/i.test(cleanLine);
+					const isPerf = /perf|smooth|speed|opt/i.test(cleanLine);
+					const isFix = /fix|bug|repair/i.test(cleanLine);
+
+					const badgeColor = isFeatures
+						? colors.primary
+						: isPerf
+							? colors.secondary
+							: isFix
+								? colors.tertiary
+								: colors.primary;
+
+					const badgeBg = isFeatures
+						? `${colors.primary}18`
+						: isPerf
+							? `${colors.secondary}18`
+							: isFix
+								? `${colors.tertiary}18`
+								: `${colors.primary}18`;
+
+					const icon = isFeatures ? '✨' : isPerf ? '⚡' : isFix ? '🛠️' : '📋';
+
+					return (
+						<View
+							key={`header-${idx}`}
+							style={[styles.changelogHeaderBadge, { backgroundColor: badgeBg }]}
+						>
+							<Text style={[styles.changelogHeaderText, { color: badgeColor }]}>
+								{icon} {cleanLine.replace(/:$/, '')}
+							</Text>
+						</View>
+					);
+				}
+
+				return (
+					<View key={`item-${idx}`} style={styles.changelogItemRow}>
+						<View style={[styles.bulletDot, { backgroundColor: colors.primary }]} />
+						<Text
+							variant={'bodyMedium'}
+							style={[styles.changelogItemText, { color: colors.onSurface }]}
+						>
+							{cleanLine}
+						</Text>
+					</View>
+				);
+			})}
+		</View>
+	);
+}
+
 const styles = StyleSheet.create({
 	dialog: {
 		borderRadius: M3Shapes.extraLarge,
@@ -343,14 +418,44 @@ const styles = StyleSheet.create({
 	changelogBox: {
 		borderRadius: 14,
 		borderWidth: StyleSheet.hairlineWidth,
-		maxHeight: 140,
-		padding: 12,
+		maxHeight: 180,
+		padding: 10,
 	},
 	changelogScroll: {
-		maxHeight: 116,
+		maxHeight: 160,
 	},
-	changelogText: {
-		lineHeight: 20,
+	changelogList: {
+		gap: 5,
+	},
+	changelogHeaderBadge: {
+		alignSelf: 'flex-start',
+		paddingHorizontal: 8,
+		paddingVertical: 3,
+		borderRadius: 8,
+		marginTop: 6,
+		marginBottom: 2,
+	},
+	changelogHeaderText: {
+		fontSize: 12,
+		fontWeight: '700',
+		letterSpacing: 0.2,
+	},
+	changelogItemRow: {
+		flexDirection: 'row',
+		alignItems: 'flex-start',
+		gap: 8,
+		paddingLeft: 4,
+	},
+	bulletDot: {
+		width: 5,
+		height: 5,
+		borderRadius: 2.5,
+		marginTop: 7,
+	},
+	changelogItemText: {
+		flex: 1,
+		lineHeight: 18,
+		fontSize: 13,
 	},
 	progressContainer: {
 		marginTop: 14,

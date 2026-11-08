@@ -18,8 +18,8 @@ export type ProgressBarStyle =
 	| 'glow-line'
 	| 'pulse-dots';
 export type PlayerBackground = 'artwork-blur' | 'artwork-solid' | 'theme-color';
-export type DownloadLocationMode = 'music' | 'custom';
-export type UIStyle = 'clean' | 'glow-flow' | 'glass' | 'bold' | 'neo';
+export type DownloadLocationMode = 'internal' | 'music' | 'custom';
+export type UIStyle = 'glass' | 'clean' | 'neo' | 'glow-flow' | 'bold';
 export type HomeContentPreference =
 	| 'Hindi'
 	| 'Malayalam'
@@ -143,6 +143,8 @@ interface SettingsState {
 	customDownloadDirectoryUri: string | null;
 	customDownloadDirectoryName: string | null;
 	skippedUpdateVersion: string | null;
+	oledPitchBlack: boolean;
+	setOledPitchBlack: (enabled: boolean) => void;
 	setThemePreference: (preference: ThemePreference) => void;
 	setDefaultTab: (tab: DefaultTab) => void;
 	setHomeContentPreferences: (
@@ -257,16 +259,20 @@ export const useSettingsStore = create<SettingsState>()(
 			showProviderLabel: true,
 			progressBarStyle: 'expressive',
 			playerBackground: 'artwork-blur',
-			uiStyle: 'neo',
+			uiStyle: 'glass',
 			preferredStreamQuality: 'high',
 			autoplaySimilarOnQueueEnd: true,
-			downloadLocationMode: 'music',
+			downloadLocationMode: 'internal',
 			musicDownloadDirectoryUri: null,
 			musicDownloadDirectoryName: null,
 			customDownloadDirectoryUri: null,
 			customDownloadDirectoryName: null,
 			skippedUpdateVersion: null,
+			oledPitchBlack: false,
 
+			setOledPitchBlack: (enabled: boolean) => {
+				set({ oledPitchBlack: enabled });
+			},
 			setThemePreference: (preference: ThemePreference) => {
 				set({ themePreference: preference });
 			},
@@ -400,7 +406,9 @@ export const useSettingsStore = create<SettingsState>()(
 			},
 			resetDownloadLocation: () => {
 				set({
-					downloadLocationMode: 'music',
+					downloadLocationMode: 'internal',
+					musicDownloadDirectoryUri: null,
+					musicDownloadDirectoryName: null,
 					customDownloadDirectoryUri: null,
 					customDownloadDirectoryName: null,
 				});
@@ -423,10 +431,10 @@ export const useSettingsStore = create<SettingsState>()(
 					showProviderLabel: true,
 					progressBarStyle: 'expressive',
 					playerBackground: 'artwork-blur',
-					uiStyle: 'neo',
+					uiStyle: 'glass',
 					preferredStreamQuality: 'high',
 					autoplaySimilarOnQueueEnd: true,
-					downloadLocationMode: 'music',
+					downloadLocationMode: 'internal',
 					musicDownloadDirectoryUri: null,
 					musicDownloadDirectoryName: null,
 					customDownloadDirectoryUri: null,
@@ -468,7 +476,8 @@ export const useSettingsStore = create<SettingsState>()(
 				return {
 					...state,
 					accentColor: state?.accentColor ?? '#7C3AED',
-					uiStyle: state?.uiStyle ?? 'neo',
+					uiStyle: state?.uiStyle ?? 'glass',
+					downloadLocationMode: state?.downloadLocationMode ?? 'internal',
 					homeContentPreferences: normalizeHomeContentPreferences(safeHomePreferences),
 				};
 			},
@@ -581,6 +590,10 @@ export const useCustomDownloadDirectoryUri = () =>
 
 export const useCustomDownloadDirectoryName = () =>
 	useSettingsStore((state) => state.customDownloadDirectoryName);
+
+export const useOledPitchBlack = () => useSettingsStore((state) => state.oledPitchBlack);
+
+export const useSetOledPitchBlack = () => useSettingsStore((state) => state.setOledPitchBlack);
 
 export function waitForSettingsHydration(): Promise<void> {
 	return hydrationPromise;

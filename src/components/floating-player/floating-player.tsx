@@ -8,16 +8,18 @@
 import { View, Pressable, StyleSheet, PanResponder } from 'react-native';
 import { router, usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
 import Animated, {
 	useAnimatedStyle,
 	withTiming,
+	withSpring,
 	interpolate,
 	Extrapolation,
 	useSharedValue,
 	runOnJS,
 } from 'react-native-reanimated';
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { Surface } from 'react-native-paper';
+import { useAppTheme } from '@/lib/theme';
 
 import { FloatingProgressBar } from './floating-progress-bar';
 import { PlayerContent } from './player-content';
@@ -32,24 +34,23 @@ import {
 import { usePlayerUIStore } from '@/src/application/state/player-ui-store';
 import { getArtistNames } from '@/src/domain/entities/track';
 import { getLargestArtwork } from '@/src/domain/value-objects/artwork';
-import { M3Shapes } from '@/lib/theme';
 import { TAB_BAR_HEIGHT, TAB_ROUTES } from '@/lib/tab-config';
 import { FLOATING_PLAYER_HEIGHT } from '@shared/constants/layout';
 import { playbackService } from '@/src/application/services/playback-service';
-
-const AnimatedSurface = Animated.createAnimatedComponent(Surface);
 
 export { FLOATING_PLAYER_HEIGHT };
 
 export function FloatingPlayer() {
 	const pathname = usePathname();
 	const insets = useSafeAreaInsets();
+	const { isDark } = useAppTheme();
 	const currentTrack = useCurrentTrack();
 	const shouldShow = pathname !== '/player' && currentTrack !== null;
 	const isTabRoute = TAB_ROUTES.includes(pathname);
 	const bottomOffset = isTabRoute ? TAB_BAR_HEIGHT + insets.bottom + 8 : insets.bottom + 8;
 
 	const visibility = useSharedValue(shouldShow ? 1 : 0);
+	const translateX = useSharedValue(0);
 	const [isVisible, setIsVisible] = useState(shouldShow);
 
 	useEffect(() => {
@@ -71,6 +72,9 @@ export function FloatingPlayer() {
 			{
 				translateY: interpolate(visibility.value, [0, 1], [100, 0], Extrapolation.CLAMP),
 			},
+			{
+				translateX: translateX.value,
+			},
 		],
 	}));
 
@@ -78,44 +82,71 @@ export function FloatingPlayer() {
 		router.push('/player');
 	}, []);
 
-	const containerStyle = useMemo(
-		() => [styles.container, { bottom: bottomOffset }, animatedStyle],
-		[bottomOffset, animatedStyle]
-	);
-
-	const isCurrentlyPlaying = useIsPlaying();
 	const swipeResponder = useMemo(
 		() =>
 			PanResponder.create({
 				onMoveShouldSetPanResponder: (_event, gestureState) =>
-					Math.abs(gestureState.dy) > 12 &&
-					Math.abs(gestureState.dy) > Math.abs(gestureState.dx),
-				onPanResponderRelease: (_event, gestureState) => {
-					if (gestureState.dy < -24) {
-						if (isCurrentlyPlaying) {
-							router.push('/player');
-						} else {
-							void playbackService.stop();
-						}
+					Math.abs(gestureState.dx) > 14 || Math.abs(gestureState.dy) > 14,
+				onPanResponderMove: (_event, gestureState) => {
+					if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
+						translateX.value = gestureState.dx * 0.4;
 					}
 				},
+				onPanResponderRelease: (_event, gestureState) => {
+					if (
+						Math.abs(gestureState.dx) > 35 &&
+						Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
+					) {
+						if (gestureState.dx < -35) {
+							// Swiped Left -> Skip to Next
+							playbackService.skipToNext();
+						} else {
+							// Swiped Right -> Skip to Previous
+							playbackService.skipToPrevious();
+						}
+					} else if (gestureState.dy < -25) {
+						// Swiped Up -> Open Full Player
+						router.push('/player');
+					} else if (gestureState.dy > 25) {
+						// Swiped Down -> Pause / Stop
+						void playbackService.pause();
+					}
+					translateX.value = withSpring(0, { damping: 18, stiffness: 220 });
+				},
+				onPanResponderTerminate: () => {
+					translateX.value = withSpring(0, { damping: 18, stiffness: 220 });
+				},
 			}),
-		[isCurrentlyPlaying]
+		[translateX]
 	);
 
 	if (!isVisible && !shouldShow) {
 		return <View style={styles.hidden} />;
 	}
 
+	const glassBgColor = isDark ? 'rgba(20, 20, 24, 0.76)' : 'rgba(255, 255, 255, 0.84)';
+	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)';
+
 	return (
-		<AnimatedSurface
+		<Animated.View
 			key={'floating-player'}
-			elevation={3}
-			mode={'flat'}
-			style={containerStyle}
+			style={[
+				styles.container,
+				{
+					bottom: bottomOffset,
+					borderColor: glassBorderColor,
+				},
+				animatedStyle,
+			]}
 			pointerEvents={shouldShow ? 'auto' : 'none'}
 			{...swipeResponder.panHandlers}
 		>
+			<BlurView
+				intensity={60}
+				tint={isDark ? 'dark' : 'light'}
+				experimentalBlurMethod={'dimezisBlurView'}
+				style={[StyleSheet.absoluteFill, { backgroundColor: glassBgColor }]}
+			/>
 			<Pressable onPress={handlePress} style={styles.pressable}>
 				<View style={styles.progressContainer}>
 					<FloatingProgressBar />
@@ -123,7 +154,7 @@ export function FloatingPlayer() {
 
 				<FloatingTrackInfo />
 			</Pressable>
-		</AnimatedSurface>
+		</Animated.View>
 	);
 }
 
@@ -184,11 +215,17 @@ const styles = StyleSheet.create({
 	},
 	container: {
 		position: 'absolute',
-		left: 16,
-		right: 16,
+		left: 12,
+		right: 12,
 		height: FLOATING_PLAYER_HEIGHT,
-		borderRadius: M3Shapes.large,
+		borderRadius: 24,
 		overflow: 'hidden',
+		borderWidth: 1,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 6 },
+		shadowOpacity: 0.25,
+		shadowRadius: 14,
+		elevation: 8,
 	},
 	pressable: {
 		flex: 1,

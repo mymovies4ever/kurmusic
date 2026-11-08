@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
-import { useAccentColor } from '@/src/application/state/settings-store';
+import { useAccentColor, useOledPitchBlack } from '@/src/application/state/settings-store';
 import { MD3DarkTheme, MD3LightTheme, adaptNavigationTheme } from 'react-native-paper';
 import {
 	DarkTheme as NavigationDarkTheme,
 	DefaultTheme as NavigationDefaultTheme,
 } from '@react-navigation/native';
-import { M3Colors, M3ColorScheme, SEED_COLOR } from './colors';
+import { M3Colors, M3ColorScheme, SEED_COLOR, OLED_OVERRIDE } from './colors';
 import { M3Typography, FontFamily } from './typography';
 
 export type AppTheme = typeof MD3LightTheme & {
@@ -76,13 +76,27 @@ export function useDynamicTheme() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [accentColor]);
 
-	const colors = dynamicTheme
+	const oledPitchBlack = useOledPitchBlack();
+
+	const baseColors = dynamicTheme
 		? isDark
 			? dynamicTheme.dark
 			: dynamicTheme.light
 		: isDark
 			? M3Colors.dark
 			: M3Colors.light;
+
+	const colors =
+		isDark && oledPitchBlack
+			? {
+					...baseColors,
+					...OLED_OVERRIDE,
+					elevation: {
+						...baseColors.elevation,
+						...OLED_OVERRIDE.elevation,
+					},
+				}
+			: baseColors;
 
 	const paperTheme = createPaperTheme(colors as typeof M3Colors.light, isDark);
 

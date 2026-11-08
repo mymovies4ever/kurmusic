@@ -8,18 +8,13 @@ import { SEED_COLOR } from '@/lib/theme/colors';
 import type { useAppTheme } from '@/lib/theme';
 
 export const CUSTOM_COLORS = [
-	{ value: '#7C3AED', label: 'Violet' },
-	{ value: '#2563EB', label: 'Blue' },
-	{ value: '#0891B2', label: 'Cyan' },
-	{ value: '#059669', label: 'Emerald' },
-	{ value: '#16A34A', label: 'Green' },
-	{ value: '#CA8A04', label: 'Yellow' },
-	{ value: '#EA580C', label: 'Orange' },
-	{ value: '#DC2626', label: 'Red' },
-	{ value: '#DB2777', label: 'Pink' },
-	{ value: '#9333EA', label: 'Purple' },
-	{ value: '#4F46E5', label: 'Indigo' },
-	{ value: '#64748B', label: 'Slate' },
+	{ value: '#6366F1', label: 'Obsidian Violet' },
+	{ value: '#64748B', label: 'Titanium Slate' },
+	{ value: '#D97706', label: 'Vintage Amber' },
+	{ value: '#2563EB', label: 'Cobalt Pacific' },
+	{ value: '#059669', label: 'Emerald Sage' },
+	{ value: '#9D174D', label: 'Luxury Bordeaux' },
+	{ value: '#334155', label: 'Studio Monochrome' },
 ] as const;
 
 // null = dynamic/Material You colors (wallpaper-extracted on Android 12+)

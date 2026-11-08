@@ -114,9 +114,14 @@ export const PlayerContent = React.memo(function PlayerContent({
 				<IconButton
 					icon={playPauseIcon}
 					size={22}
+					iconColor={colors.primary}
 					onPress={onPlayPause}
 					disabled={isLoading}
-					style={[styles.controlButton, styles.primaryControlButton]}
+					style={[
+						styles.controlButton,
+						styles.primaryControlButton,
+						{ backgroundColor: `${colors.primary}22` },
+					]}
 				/>
 				<IconButton
 					icon={skipForwardIcon}
@@ -179,6 +184,7 @@ const styles = StyleSheet.create({
 		margin: 0,
 	},
 	primaryControlButton: {
-		marginHorizontal: -2,
+		marginHorizontal: 2,
+		borderRadius: 22,
 	},
 });

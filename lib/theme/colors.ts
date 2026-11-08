@@ -116,4 +116,43 @@ export const M3Colors = {
 	},
 } as const;
 
+export const OLED_OVERRIDE = {
+	background: '#000000',
+	surface: '#000000',
+	surfaceContainerLowest: '#000000',
+	surfaceContainerLow: '#080808',
+	surfaceContainer: '#121212',
+	surfaceContainerHigh: '#181818',
+	surfaceContainerHighest: '#222222',
+	elevation: {
+		level0: 'transparent',
+		level1: '#0D0D0D',
+		level2: '#141414',
+		level3: '#1A1A1A',
+		level4: '#202020',
+		level5: '#262626',
+	},
+} as const;
+
+export const GlassColors = {
+	light: {
+		glassSurface: 'rgba(255, 255, 255, 0.75)',
+		glassBorder: 'rgba(255, 255, 255, 0.4)',
+		glassHighlight: 'rgba(255, 255, 255, 0.8)',
+		glassScrim: 'rgba(0, 0, 0, 0.1)',
+	},
+	dark: {
+		glassSurface: 'rgba(28, 27, 31, 0.72)',
+		glassBorder: 'rgba(255, 255, 255, 0.12)',
+		glassHighlight: 'rgba(255, 255, 255, 0.18)',
+		glassScrim: 'rgba(0, 0, 0, 0.45)',
+	},
+	oled: {
+		glassSurface: 'rgba(10, 10, 10, 0.78)',
+		glassBorder: 'rgba(255, 255, 255, 0.14)',
+		glassHighlight: 'rgba(255, 255, 255, 0.22)',
+		glassScrim: 'rgba(0, 0, 0, 0.65)',
+	},
+} as const;
+
 export type M3ColorScheme = typeof M3Colors.light | typeof M3Colors.dark;

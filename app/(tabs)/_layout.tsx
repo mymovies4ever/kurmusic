@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { Tabs, router } from 'expo-router';
 import { View, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
+import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Text, IconButton } from 'react-native-paper';
@@ -11,6 +12,7 @@ import { useActiveDownloadsCount } from '@/src/application/state/download-store'
 import {
 	useTabOrder,
 	useEnabledTabs,
+	useUIStyle,
 	type TabId,
 	DEFAULT_TAB_ORDER,
 } from '@/src/application/state/settings-store';
@@ -115,17 +117,27 @@ export default function TabLayout() {
 
 function TabHeader({ initialTabId }: { readonly initialTabId: TabId }) {
 	const currentTabId = useActiveTabListener(initialTabId);
-	const { colors } = useAppTheme();
+	const { colors, isDark } = useAppTheme();
+	const uiStyle = useUIStyle();
+	const isGlass = uiStyle === 'glass';
 	const insets = useSafeAreaInsets();
 	const title = TAB_CONFIG[currentTabId]?.title ?? '';
 	const isHomeFeed = currentTabId === 'feed';
+
+	const glassHeaderBg = isDark ? 'rgba(16, 16, 22, 0.76)' : 'rgba(255, 255, 255, 0.84)';
+	const glassHeaderBorder = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
 
 	return (
 		<>
 			<View
 				style={[
 					styles.tabHeader,
-					{ paddingTop: insets.top, backgroundColor: colors.background },
+					{
+						paddingTop: insets.top,
+						backgroundColor: isGlass ? glassHeaderBg : colors.background,
+						borderBottomWidth: isGlass ? 1 : 0,
+						borderBottomColor: isGlass ? glassHeaderBorder : 'transparent',
+					},
 				]}
 			>
 				<View style={styles.headerActions}>
@@ -191,10 +203,15 @@ interface CustomTabBarProps extends BottomTabBarProps {
 }
 
 function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: CustomTabBarProps) {
-	const { colors } = useAppTheme();
+	const { colors, isDark } = useAppTheme();
+	const uiStyle = useUIStyle();
+	const isGlass = uiStyle === 'glass';
 	const insets = useSafeAreaInsets();
 	const activeDownloadsCount = useActiveDownloadsCount();
 	const tabBarHeight = TAB_BAR_HEIGHT + insets.bottom;
+
+	const glassBgColor = isDark ? 'rgba(18, 18, 24, 0.78)' : 'rgba(255, 255, 255, 0.85)';
+	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)';
 
 	const currentRouteName = state.routes[state.index]?.name as TabId;
 	const visualIndex = tabOrder.indexOf(currentRouteName);
@@ -246,11 +263,26 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 
 	return (
 		<View style={styles.tabBarContainer}>
+			{isGlass && (
+				<BlurView
+					intensity={65}
+					tint={isDark ? 'dark' : 'light'}
+					experimentalBlurMethod={'dimezisBlurView'}
+					style={[
+						StyleSheet.absoluteFill,
+						{
+							backgroundColor: glassBgColor,
+							borderTopWidth: 1,
+							borderTopColor: glassBorderColor,
+						},
+					]}
+				/>
+			)}
 			<View
 				style={[
 					styles.tabBar,
 					{
-						backgroundColor: colors.surfaceContainer,
+						backgroundColor: isGlass ? 'transparent' : colors.surfaceContainer,
 						height: tabBarHeight,
 						paddingBottom: insets.bottom,
 					},
@@ -260,7 +292,14 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 					<Animated.View
 						style={[
 							styles.indicator,
-							{ backgroundColor: colors.secondaryContainer, top: INDICATOR_TOP },
+							{
+								backgroundColor: isGlass
+									? `${colors.primary}28`
+									: colors.secondaryContainer,
+								borderWidth: isGlass ? 1 : 0,
+								borderColor: isGlass ? `${colors.primary}55` : 'transparent',
+								top: INDICATOR_TOP,
+							},
 							animatedIndicatorStyle,
 						]}
 					/>

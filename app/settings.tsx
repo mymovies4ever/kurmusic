@@ -25,6 +25,7 @@ import {
 	PlugIcon,
 	HardDriveIcon,
 	SunMoonIcon,
+	MoonIcon,
 	LayoutGridIcon,
 	SlidersHorizontalIcon,
 	MusicIcon,
@@ -105,6 +106,8 @@ export default function SettingsScreen() {
 		downloadLocationMode,
 		musicDownloadDirectoryName,
 		customDownloadDirectoryName,
+		oledPitchBlack,
+		setOledPitchBlack,
 		setMusicDownloadDirectory,
 		setCustomDownloadDirectory,
 		resetDownloadLocation,
@@ -133,6 +136,8 @@ export default function SettingsScreen() {
 			downloadLocationMode: state.downloadLocationMode,
 			musicDownloadDirectoryName: state.musicDownloadDirectoryName,
 			customDownloadDirectoryName: state.customDownloadDirectoryName,
+			oledPitchBlack: state.oledPitchBlack,
+			setOledPitchBlack: state.setOledPitchBlack,
 			setMusicDownloadDirectory: state.setMusicDownloadDirectory,
 			setCustomDownloadDirectory: state.setCustomDownloadDirectory,
 			resetDownloadLocation: state.resetDownloadLocation,
@@ -251,13 +256,24 @@ export default function SettingsScreen() {
 	};
 
 	const downloadLocationLabel =
-		downloadLocationMode === 'music'
-			? (musicDownloadDirectoryName ?? 'Music folder')
-			: (customDownloadDirectoryName ?? 'Selected folder');
+		downloadLocationMode === 'internal'
+			? 'App storage (No duplicates)'
+			: downloadLocationMode === 'music'
+				? (musicDownloadDirectoryName ?? 'Music folder')
+				: (customDownloadDirectoryName ?? 'Selected folder');
 
 	const handleSelectDownloadLocation = useCallback(
 		async (selection: string) => {
 			setDownloadLocationSheetVisible(false);
+
+			if (selection === 'internal') {
+				resetDownloadLocation();
+				success(
+					'Download location updated',
+					'Downloads will be saved in App storage with zero duplicate copies'
+				);
+				return;
+			}
 
 			if (selection === 'music') {
 				const result = await permissionService.requestMusicDirectoryPermission();
@@ -289,7 +305,10 @@ export default function SettingsScreen() {
 
 			if (selection === 'reset') {
 				resetDownloadLocation();
-				success('Download location reset', 'Downloads will use the Music folder again');
+				success(
+					'Download location reset',
+					'Downloads will use App storage (no duplicates)'
+				);
 			}
 		},
 		[resetDownloadLocation, setCustomDownloadDirectory, setMusicDownloadDirectory, success]
@@ -300,26 +319,27 @@ export default function SettingsScreen() {
 			{
 				items: [
 					{
+						id: 'internal',
+						label: 'App storage (Default - No duplicates)',
+						icon: HardDriveIcon,
+						checked: downloadLocationMode === 'internal',
+					},
+					{
 						id: 'music',
-						label: 'Music folder',
+						label: 'Public Music folder',
 						icon: MusicIcon,
-						checked: downloadLocationLabel.toLowerCase() === 'music folder',
+						checked: downloadLocationMode === 'music',
 					},
 					{
 						id: 'folder',
-						label: 'Choose folder',
+						label: 'Choose custom folder',
 						icon: FolderOpenIcon,
-						checked: downloadLocationLabel.toLowerCase() !== 'music folder',
-					},
-					{
-						id: 'reset',
-						label: 'Reset to Music',
-						icon: RotateCcwIcon,
+						checked: downloadLocationMode === 'custom',
 					},
 				],
 			},
 		],
-		[downloadLocationLabel]
+		[downloadLocationMode]
 	);
 
 	const homeLanguageOptions = useMemo(() => HOME_CONTENT_PREFERENCE_OPTIONS, []);
@@ -484,6 +504,18 @@ export default function SettingsScreen() {
 						value={themePreference}
 						onValueChange={setThemePreference}
 						portalName={'theme-select'}
+					/>
+					<SettingsItem
+						icon={MoonIcon}
+						title={'OLED Pitch Black'}
+						subtitle={'True #000000 AMOLED pure black theme for max battery life'}
+						rightElement={
+							<Switch
+								value={oledPitchBlack}
+								onValueChange={setOledPitchBlack}
+								color={colors.primary}
+							/>
+						}
 					/>
 					<AccentColorPicker value={accentColor} onValueChange={setAccentColor} />
 					<SettingsSelect

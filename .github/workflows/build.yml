@@ -49,6 +49,8 @@ jobs:
                   echo "org.gradle.workers.max=2" >> android/gradle.properties
                   echo "org.gradle.parallel=false" >> android/gradle.properties
                   echo "android.useFullClasspathForDexingTransform=true" >> android/gradle.properties
+                  echo "android.enableR8.fullMode=true" >> android/gradle.properties
+                  echo "android.injected.build.abi=arm64-v8a" >> android/gradle.properties
                   echo "android.packagingOptions.pickFirsts += ['**/libcrypto.so', '**/libssl.so', 'META-INF/*']" >> android/app/build.gradle
                   echo "android.packagingOptions.excludes += ['META-INF/INDEX.LIST', 'META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/NOTICE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE.txt']" >> android/app/build.gradle
 

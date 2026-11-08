@@ -67,6 +67,11 @@ async function _doSetup(): Promise<boolean> {
 
 		await TrackPlayer.setupPlayer({
 			autoHandleInterruptions: true,
+			maxCacheSize: 512 * 1024,
+			minBuffer: 15,
+			maxBuffer: 50,
+			playBuffer: 2.5,
+			backBuffer: 30,
 		});
 
 		await TrackPlayer.updateOptions({

@@ -27,6 +27,7 @@ import {
 import { PlayerControls } from '@/src/components/player/player-controls';
 import { ProgressBar } from '@/src/components/player/progress-bar';
 import { SoundwaveVisualizer } from '@/src/components/player/soundwave-visualizer';
+import { AuroraAmbientGlow } from '@/src/components/player/aurora-ambient-glow';
 import { TrackOptionsMenu } from '@/src/components/track-options-menu';
 import { PlayerThemeProvider, usePlayerTheme } from '@/src/components/player/player-theme-context';
 import { getLargestArtwork } from '@/src/domain/value-objects/artwork';
@@ -230,6 +231,12 @@ function PlayerScreenContent() {
 							entering={ZoomIn.springify().damping(16).delay(60)}
 							style={styles.artworkContainer}
 						>
+							<AuroraAmbientGlow
+								dominantColor={dominantColor}
+								secondaryColor={colors.primary}
+								isPlaying={isPlaying}
+								size={320}
+							/>
 							<View
 								style={[styles.artworkWrapper, artworkLoaded && artworkShadowStyle]}
 							>

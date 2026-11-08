@@ -441,6 +441,9 @@ export class DownloadService {
 		format: string
 	): Promise<Result<ExternalDownloadResult, Error>> {
 		const settings = useSettingsStore.getState();
+		if (settings.downloadLocationMode === 'internal') {
+			return err(new Error('Internal storage only: external export skipped'));
+		}
 
 		return exportAudioToExternalDirectory(filePath, trackId, displayName, format, {
 			mode: settings.downloadLocationMode,
