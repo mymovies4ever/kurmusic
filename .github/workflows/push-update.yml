@@ -156,7 +156,7 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: kurmusic-${{ needs.validate.outputs.version }}-release
-                  path: android/app/build/outputs/apk/release/app-release.apk
+                  path: android/app/build/outputs/apk/**/*.apk
                   retention-days: 90
 
     create-release:
@@ -179,7 +179,10 @@ jobs:
 
             - name: Rename artifacts
               run: |
-                  mv artifacts/release/app-release.apk artifacts/kurmusic-${{ needs.validate.outputs.version }}-release.apk
+                  mkdir -p artifacts
+                  APK_FILE=$(find artifacts/release -name "*.apk" | head -n 1)
+                  echo "Found APK: $APK_FILE"
+                  cp "$APK_FILE" artifacts/kurmusic-${{ needs.validate.outputs.version }}-release.apk
 
             - name: Extract Release Notes from CHANGELOG.md
               id: changelog_notes
