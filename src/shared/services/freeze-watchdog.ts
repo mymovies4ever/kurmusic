@@ -31,7 +31,7 @@ class FreezeWatchdog {
 	private lastHeartbeat = Date.now();
 
 	public start(): void {
-		if (this.isStarted) return;
+		if (!__DEV__ || this.isStarted) return;
 		this.isStarted = true;
 
 		this.recordMilestone('JS_RUNTIME_START', 'JavaScript engine execution started');
@@ -61,6 +61,7 @@ class FreezeWatchdog {
 	}
 
 	public recordMilestone(name: string, details?: string): void {
+		if (!__DEV__) return;
 		const now = Date.now();
 		const milestone: BootMilestone = {
 			name,
@@ -77,6 +78,7 @@ class FreezeWatchdog {
 	}
 
 	public async evaluateAndAutoSaveReport(triggerReason: string): Promise<string> {
+		if (!__DEV__) return '';
 		const diagState = useDiagnosticStore.getState();
 		const settingsHydrated = useSettingsStore.persist.hasHydrated();
 		const queueLength = usePlayerStore.getState().queue.length;

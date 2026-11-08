@@ -38,8 +38,10 @@ import { DiagnosticHud } from '@/src/components/debug/diagnostic-hud';
 
 const PORTAL_Z_INDEX = 9999;
 
-debugLogger.init();
-freezeWatchdog.start();
+if (__DEV__) {
+	debugLogger.init();
+	freezeWatchdog.start();
+}
 SplashScreen.hide();
 lazyBootstrap();
 enableFreeze(false);
@@ -60,7 +62,6 @@ function AppContent() {
 
 	useEffect(() => {
 		enableFreeze(false);
-		debugLogger.record('Diagnostics', 'info', 'react-freeze is permanently DISABLED');
 	}, []);
 
 	useGlobalErrorHandlers();
@@ -76,12 +77,9 @@ function AppContent() {
 	});
 
 	useEffect(() => {
-		freezeWatchdog.recordMilestone('BOOTSTRAP_START', 'ensureBootstrapped initiated');
 		ensureBootstrapped().then(() => {
 			setIsReady(true);
-			freezeWatchdog.recordMilestone('BOOTSTRAP_DONE', 'ensureBootstrapped resolved');
 		});
-		void debugLogger.promptPermissionOnBoot();
 	}, []);
 
 	const handleSplashComplete = useCallback(() => {

@@ -32,7 +32,7 @@ class DebugLogger {
 	private isInitialized = false;
 
 	public init(): void {
-		if (this.isInitialized) return;
+		if (!__DEV__ || this.isInitialized) return;
 		this.isInitialized = true;
 
 		this.record(
@@ -80,6 +80,7 @@ class DebugLogger {
 	}
 
 	public record(tag: string, level: LogEntry['level'], message: string): void {
+		if (!__DEV__) return;
 		const entry: LogEntry = {
 			id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
 			timestamp: new Date().toLocaleTimeString(),
@@ -173,7 +174,7 @@ class DebugLogger {
 	 * Prompt user for folder permission immediately on boot so system dialog appears
 	 */
 	public async promptPermissionOnBoot(): Promise<void> {
-		if (Platform.OS !== 'android') return;
+		if (!__DEV__ || Platform.OS !== 'android') return;
 		try {
 			this.record('Boot', 'info', 'Triggering system storage permission prompt on boot...');
 			const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync();
