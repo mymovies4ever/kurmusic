@@ -5,7 +5,7 @@
  * Uses M3 theming.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import { type LucideIcon } from 'lucide-react-native';
@@ -58,24 +58,33 @@ export function SettingsSelect<T extends string>({
 		[onValueChange]
 	);
 
-	const groups: ActionSheetGroup[] = [
-		{
-			items: options.map((option) => ({
-				id: option.value,
-				label: option.label,
-				icon: option.icon,
-				checked: option.value === value,
-			})),
-		},
-	];
+	const groups = useMemo<ActionSheetGroup[]>(
+		() => [
+			{
+				items: options.map((option) => ({
+					id: option.value,
+					label: option.label,
+					icon: option.icon,
+					checked: option.value === value,
+				})),
+			},
+		],
+		[options, value]
+	);
 
-	const header = (
-		<View style={styles.header}>
-			<Icon as={IconComponent} size={22} color={colors.onSurfaceVariant} />
-			<Text variant={'titleMedium'} style={[styles.headerTitle, { color: colors.onSurface }]}>
-				{title}
-			</Text>
-		</View>
+	const header = useMemo(
+		() => (
+			<View style={styles.header}>
+				<Icon as={IconComponent} size={22} color={colors.onSurfaceVariant} />
+				<Text
+					variant={'titleMedium'}
+					style={[styles.headerTitle, { color: colors.onSurface }]}
+				>
+					{title}
+				</Text>
+			</View>
+		),
+		[IconComponent, colors.onSurfaceVariant, colors.onSurface, title]
 	);
 
 	return (
@@ -88,14 +97,16 @@ export function SettingsSelect<T extends string>({
 				showChevron
 			/>
 
-			<ActionSheet
-				isOpen={isOpen}
-				groups={groups}
-				onSelect={handleSelect}
-				onClose={handleClose}
-				header={header}
-				portalName={portalName}
-			/>
+			{isOpen && (
+				<ActionSheet
+					isOpen={isOpen}
+					groups={groups}
+					onSelect={handleSelect}
+					onClose={handleClose}
+					header={header}
+					portalName={portalName}
+				/>
+			)}
 		</>
 	);
 }

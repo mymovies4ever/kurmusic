@@ -13,7 +13,6 @@ import { lazyBootstrap, ensureBootstrapped } from '@/src/application/bootstrap';
 import { appResumeManager } from '@/src/application/services/app-resume-manager';
 import { useAppState } from '@/src/hooks/use-app-state';
 import { FloatingPlayer } from '@/src/components/floating-player';
-import { DynamicIsland } from '@/src/components/ui/dynamic-island';
 import { TrackOptionsSheet } from '@/src/components/track-options-menu';
 import { TagEditorSheet } from '@/src/components/track-options-menu/tag-editor-sheet';
 import { SleepTimerSheet } from '@/src/components/player/sleep-timer-sheet';
@@ -102,7 +101,6 @@ function AppContent() {
 				<Stack.Screen name={'settings'} options={{ presentation: 'modal' }} />
 				<Stack.Screen name={'add-to-playlist'} options={{ presentation: 'modal' }} />
 			</Stack>
-			<DynamicIsland />
 			<FloatingPlayer />
 			<QueueSheet isOpen={queueSheetOpen} onClose={closeQueueSheet} />
 			<SleepTimerSheet isOpen={sleepTimerSheetOpen} onClose={closeSleepTimerSheet} />

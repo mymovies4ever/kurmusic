@@ -51,10 +51,13 @@ export function FloatingPlayer() {
 
 	const visibility = useSharedValue(shouldShow ? 1 : 0);
 	const translateX = useSharedValue(0);
+	const translateY = useSharedValue(0);
 	const [isVisible, setIsVisible] = useState(shouldShow);
 
 	useEffect(() => {
 		if (shouldShow) {
+			translateX.value = 0;
+			translateY.value = 0;
 			setIsVisible(true);
 			visibility.value = withTiming(1, { duration: 300 });
 		} else {
@@ -64,13 +67,15 @@ export function FloatingPlayer() {
 				}
 			});
 		}
-	}, [shouldShow, visibility]);
+	}, [shouldShow, visibility, translateX, translateY]);
 
 	const animatedStyle = useAnimatedStyle(() => ({
 		opacity: visibility.value,
 		transform: [
 			{
-				translateY: interpolate(visibility.value, [0, 1], [100, 0], Extrapolation.CLAMP),
+				translateY:
+					interpolate(visibility.value, [0, 1], [100, 0], Extrapolation.CLAMP) +
+					translateY.value,
 			},
 			{
 				translateX: translateX.value,
@@ -90,6 +95,8 @@ export function FloatingPlayer() {
 				onPanResponderMove: (_event, gestureState) => {
 					if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
 						translateX.value = gestureState.dx * 0.4;
+					} else if (gestureState.dy > 0) {
+						translateY.value = gestureState.dy;
 					}
 				},
 				onPanResponderRelease: (_event, gestureState) => {
@@ -104,28 +111,37 @@ export function FloatingPlayer() {
 							// Swiped Right -> Skip to Previous
 							playbackService.skipToPrevious();
 						}
+						translateX.value = withSpring(0, { damping: 18, stiffness: 220 });
 					} else if (gestureState.dy < -25) {
 						// Swiped Up -> Open Full Player
 						router.push('/player');
-					} else if (gestureState.dy > 25) {
-						// Swiped Down -> Pause / Stop
-						void playbackService.pause();
+						translateY.value = withSpring(0, { damping: 18, stiffness: 220 });
+					} else if (gestureState.dy > 30 || gestureState.vy > 0.4) {
+						// Swiped Down -> Dismiss Mini Player & Stop Playback
+						translateY.value = withTiming(160, { duration: 180 }, (finished) => {
+							if (finished) {
+								runOnJS(playbackService.stop)();
+							}
+						});
+					} else {
+						translateX.value = withSpring(0, { damping: 18, stiffness: 220 });
+						translateY.value = withSpring(0, { damping: 18, stiffness: 220 });
 					}
-					translateX.value = withSpring(0, { damping: 18, stiffness: 220 });
 				},
 				onPanResponderTerminate: () => {
 					translateX.value = withSpring(0, { damping: 18, stiffness: 220 });
+					translateY.value = withSpring(0, { damping: 18, stiffness: 220 });
 				},
 			}),
-		[translateX]
+		[translateX, translateY]
 	);
 
 	if (!isVisible && !shouldShow) {
 		return <View style={styles.hidden} />;
 	}
 
-	const glassBgColor = isDark ? 'rgba(20, 20, 24, 0.76)' : 'rgba(255, 255, 255, 0.84)';
-	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)';
+	const glassBgColor = isDark ? 'rgba(12, 12, 16, 0.72)' : 'rgba(255, 255, 255, 0.85)';
+	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.08)';
 
 	return (
 		<Animated.View
@@ -142,7 +158,7 @@ export function FloatingPlayer() {
 			{...swipeResponder.panHandlers}
 		>
 			<BlurView
-				intensity={60}
+				intensity={80}
 				tint={isDark ? 'dark' : 'light'}
 				experimentalBlurMethod={'dimezisBlurView'}
 				style={[StyleSheet.absoluteFill, { backgroundColor: glassBgColor }]}

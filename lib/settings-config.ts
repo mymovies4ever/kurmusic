@@ -26,9 +26,9 @@ import type {
 import type { StreamQuality } from '@/src/domain/value-objects/audio-source';
 
 export const THEME_OPTIONS: { value: ThemePreference; label: string; icon: LucideIcon }[] = [
-	{ value: 'system', label: 'System', icon: MonitorSmartphoneIcon },
+	{ value: 'dark', label: 'Dark (Default)', icon: MoonIcon },
 	{ value: 'light', label: 'Light', icon: SunIcon },
-	{ value: 'dark', label: 'Dark', icon: MoonIcon },
+	{ value: 'system', label: 'System', icon: MonitorSmartphoneIcon },
 ];
 
 export const DEFAULT_TAB_OPTIONS: { value: DefaultTab; label: string; icon: LucideIcon }[] = [

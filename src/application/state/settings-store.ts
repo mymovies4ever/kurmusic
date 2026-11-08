@@ -19,7 +19,7 @@ export type ProgressBarStyle =
 	| 'pulse-dots';
 export type PlayerBackground = 'artwork-blur' | 'artwork-solid' | 'theme-color';
 export type DownloadLocationMode = 'internal' | 'music' | 'custom';
-export type UIStyle = 'glass' | 'clean' | 'neo' | 'glow-flow' | 'bold';
+export type UIStyle = 'glass' | 'clean' | 'neo';
 export type HomeContentPreference =
 	| 'Hindi'
 	| 'Malayalam'
@@ -247,7 +247,7 @@ const hydrationPromise = new Promise<void>((resolve) => {
 export const useSettingsStore = create<SettingsState>()(
 	persist(
 		(set, get) => ({
-			themePreference: 'system',
+			themePreference: 'dark',
 			defaultTab: 'feed',
 			homeContentPreferences: [...DEFAULT_HOME_CONTENT_PREFERENCES],
 			homeFeedPriority: DEFAULT_HOME_FEED_PRIORITY,
@@ -258,7 +258,7 @@ export const useSettingsStore = create<SettingsState>()(
 			openPlayerOnTrackClick: false,
 			showProviderLabel: true,
 			progressBarStyle: 'expressive',
-			playerBackground: 'artwork-blur',
+			playerBackground: 'theme-color',
 			uiStyle: 'glass',
 			preferredStreamQuality: 'high',
 			autoplaySimilarOnQueueEnd: true,
@@ -268,7 +268,7 @@ export const useSettingsStore = create<SettingsState>()(
 			customDownloadDirectoryUri: null,
 			customDownloadDirectoryName: null,
 			skippedUpdateVersion: null,
-			oledPitchBlack: false,
+			oledPitchBlack: true,
 
 			setOledPitchBlack: (enabled: boolean) => {
 				set({ oledPitchBlack: enabled });
@@ -419,7 +419,7 @@ export const useSettingsStore = create<SettingsState>()(
 			resetAllSettings: async () => {
 				const defaults = [...DEFAULT_HOME_CONTENT_PREFERENCES];
 				set({
-					themePreference: 'system',
+					themePreference: 'dark',
 					defaultTab: 'feed',
 					homeContentPreferences: defaults,
 					homeFeedPriority: DEFAULT_HOME_FEED_PRIORITY,
@@ -430,7 +430,7 @@ export const useSettingsStore = create<SettingsState>()(
 					openPlayerOnTrackClick: false,
 					showProviderLabel: true,
 					progressBarStyle: 'expressive',
-					playerBackground: 'artwork-blur',
+					playerBackground: 'theme-color',
 					uiStyle: 'glass',
 					preferredStreamQuality: 'high',
 					autoplaySimilarOnQueueEnd: true,
@@ -440,6 +440,7 @@ export const useSettingsStore = create<SettingsState>()(
 					customDownloadDirectoryUri: null,
 					customDownloadDirectoryName: null,
 					skippedUpdateVersion: null,
+					oledPitchBlack: true,
 				});
 				await syncNativeLanguageCookie(defaults);
 			},

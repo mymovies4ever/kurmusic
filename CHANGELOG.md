@@ -6,20 +6,21 @@ All notable changes to the Kur Music application are documented in this file.
 
 ### ✨ Features
 
-- **Full Liquid Glass Default UI**: Frosted glass bottom navigation bar with hardware-accelerated blur, 1px specular top border, glowing indicator pills, and translucent header chrome.
-- **Dynamic Island Notch Pill**: Interactive camera punch-hole notch pill that morphs smoothly into view at the top of your screen when playing audio outside the player. Includes spinning vinyl album disc, live 3-bar animated equalizer, and mini play/pause control.
-- **Liquid Glass Floating Mini-Player**: Translucent frosted glass mini-player powered by native blur, squircle geometry, floating elevation, and responsive swipe-to-skip gestures (swipe left for next track, swipe right for previous, swipe up to open player, swipe down to pause).
-- **Player Aurora Ambient Glow**: Breathing multi-stop ambient radial bloom behind the album artwork that dynamically adapts to the dominant and secondary colors of the active track with smooth pulsing animations.
-- **Professional Studio Theming**: Replaced generic neon accents with 7 curated professional audio studio palettes (_Obsidian Violet, Titanium Slate, Vintage Amber, Cobalt Pacific, Emerald Sage, Luxury Bordeaux, Studio Monochrome_).
-- **OLED Pitch Black AMOLED Mode**: Dedicated toggle in Appearance Settings to turn all background, surface, and container colors into pure `#000000` pitch black for maximum battery savings and contrast on OLED displays.
+- **Full Liquid Glass Default UI**: Frosted glass bottom navigation bar and floating player with hardware-accelerated blur, 1px specular top border, glowing indicator pills, and translucent chrome—now enabled by default with Dark Mode and OLED Pitch Black.
+- **Liquid Glass Floating Mini-Player with Swipe-Down Dismiss**: Translucent frosted glass mini-player powered by native blur, floating elevation, and responsive gestures: swipe down to dismiss the mini-player and stop playback, swipe up to expand full player, swipe left/right to skip tracks.
+- **Theme-Consistent Main Player**: Main player strictly sticks to your configured app theming and studio accent palette, eliminating unintended color shifting with respect to album artwork.
+- **Player Aurora Ambient Glow**: Breathing multi-stop ambient radial bloom behind the album artwork that pulses in harmony with the app's configured accent and secondary palette with smooth battery-efficient animations.
+- **Professional Studio Theming**: 7 curated professional audio studio palettes (_Obsidian Violet, Titanium Slate, Vintage Amber, Cobalt Pacific, Emerald Sage, Luxury Bordeaux, Studio Monochrome_).
+- **OLED Pitch Black AMOLED Mode**: Dedicated toggle in Appearance Settings (enabled by default) to turn background and surface containers into pure `#000000` pitch black for maximum battery savings and contrast on OLED displays.
 - **Zero Duplicate Download Storage**: Added "App Storage (No Duplicates)" download mode, saving 50% disk storage by eliminating redundant copies in the public music directory.
 - **Categorized OTA Update Cards**: In-app OTA updater now presents release notes formatted into rich Material 3 categorized badge cards (Features, Performance, Fixes).
 
 ### ⚡ Performance
 
+- **Settings Screen Optimization**: Completely eliminated UI thread freezes and frame drops in Settings by replacing heavy library/download array subscriptions with lightweight scalar selectors, memoizing modal select sheets, and deferring offscreen sheet mounting.
 - **Aggressive APK Compression**: Dropped legacy 32-bit architecture to target modern pure `arm64-v8a`, enabled ProGuard/R8 Full Mode dead-code elimination, and enabled resource shrinking to compress the release APK size by over 50%.
 - **512MB ExoPlayer Audio Disk Cache**: Seamless offline chunk caching for all streaming playback, enabling instant replay and zero cellular data usage on replayed tracks.
-- **Background Battery Saver**: AppState-based animation throttling automatically halts 60 FPS GPU loops (Aurora pulse, Dynamic Island eq, disc rotation) when screen is off or app is minimized.
+- **Background Battery Saver**: AppState-based animation throttling automatically halts 60 FPS GPU loops (Aurora pulse, visualizer) when screen is off or app is minimized.
 - **Zero Logging Overhead**: Completely disabled debug logging and freeze watchdog background disk writes in production release builds.
 
 ### 🛠️ Fixes

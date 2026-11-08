@@ -48,7 +48,6 @@ const thumbUpRegular =
 const thumbUpSolid =
 	require('@/assets/animation/system-solid-124-thumb-up-hover-thumb-up.json') as AnimationObject;
 
-const DARK_SCRIM_OPACITY = 0.6;
 function hexToRgbArray(hex: string): [number, number, number, number] {
 	const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 	if (!result) return [0, 0, 0, 1];
@@ -71,12 +70,8 @@ function replaceColorsInSource(source: AnimationObject, color: string): Animatio
 }
 
 export default function PlayerScreen() {
-	const currentTrack = useCurrentTrack();
-	const artwork = currentTrack ? getLargestArtwork(currentTrack.artwork) : undefined;
-	const artworkUrl = artwork?.url;
-
 	return (
-		<PlayerThemeProvider artworkUrl={artworkUrl}>
+		<PlayerThemeProvider>
 			<PlayerScreenContent />
 		</PlayerThemeProvider>
 	);
@@ -87,7 +82,7 @@ function PlayerScreenContent() {
 	const currentTrack = useCurrentTrack();
 	const error = usePlayerError();
 	const { colors: appColors, isDark } = useAppTheme();
-	const { colors, backgroundStyle, dominantColor } = usePlayerTheme();
+	const { colors } = usePlayerTheme();
 	const openQueueSheet = usePlayerUIStore((s) => s.openQueueSheet);
 	const [artworkLoaded, setArtworkLoaded] = useState(false);
 	const { isPlaying } = usePlayer();
@@ -111,15 +106,14 @@ function PlayerScreenContent() {
 	);
 
 	const artworkShadowStyle = useMemo(() => {
-		const shadowColor = dominantColor ?? '#000';
 		return {
-			shadowColor,
+			shadowColor: colors.primary,
 			shadowOffset: { width: 0, height: 20 },
-			shadowOpacity: 0.45,
+			shadowOpacity: 0.35,
 			shadowRadius: 36,
 			elevation: 28,
 		};
-	}, [dominantColor]);
+	}, [colors.primary]);
 
 	const handleToggleFavorite = useCallback(() => {
 		const store = useLibraryStore.getState();
@@ -182,16 +176,13 @@ function PlayerScreenContent() {
 	const artistNames = getArtistNames(currentTrack);
 	const albumName = currentTrack.album?.name;
 
-	// Artwork-blur and artwork-solid always have dark backgrounds → light status bar
-	// Theme-color follows the app theme
-	const statusBarStyle =
-		backgroundStyle === 'theme-color' ? (isDark ? 'light' : 'dark') : 'light';
+	const statusBarStyle = isDark ? 'light' : 'dark';
 
 	return (
 		<GestureDetector gesture={swipeGesture}>
 			<View style={[styles.container, { backgroundColor: appColors.background }]}>
 				<StatusBar style={statusBarStyle} />
-				{renderBackground(backgroundStyle, artworkUrl, appColors.background, dominantColor)}
+				{renderBackground(appColors.background, colors.primary, isDark)}
 
 				<SafeAreaView style={styles.safeArea}>
 					<View style={styles.content}>
@@ -232,8 +223,8 @@ function PlayerScreenContent() {
 							style={styles.artworkContainer}
 						>
 							<AuroraAmbientGlow
-								dominantColor={dominantColor}
-								secondaryColor={colors.primary}
+								dominantColor={colors.primary}
+								secondaryColor={colors.secondary}
 								isPlaying={isPlaying}
 								size={320}
 							/>
@@ -409,47 +400,15 @@ function PlayerScreenContent() {
 	);
 }
 
-function renderBackground(
-	style: string,
-	artworkUrl: string | undefined,
-	backgroundColor: string,
-	dominantColor: string | null
-) {
-	if (style === 'theme-color') {
-		return null;
-	}
-
-	if (style === 'artwork-solid') {
-		const solidColor = dominantColor ?? backgroundColor;
-		return (
-			<View style={StyleSheet.absoluteFill}>
-				<View style={[StyleSheet.absoluteFill, { backgroundColor: solidColor }]} />
-				<View
-					style={[
-						StyleSheet.absoluteFill,
-						{ backgroundColor: `rgba(0,0,0,${DARK_SCRIM_OPACITY})` },
-					]}
-				/>
-			</View>
-		);
-	}
-
-	// Dynamic Spotify-style Gradient Background (Default & Premium)
-	const topColor = dominantColor ?? '#1c1f26';
-	const bottomColor = '#0b0c0f';
+function renderBackground(backgroundColor: string, primaryColor: string, isDark: boolean) {
+	const topColor = isDark ? `${primaryColor}14` : `${primaryColor}0A`;
+	const bottomColor = backgroundColor;
 
 	return (
 		<View style={StyleSheet.absoluteFill}>
-			{artworkUrl ? (
-				<Image
-					source={{ uri: artworkUrl }}
-					style={[StyleSheet.absoluteFill, { opacity: 0.12 }]}
-					contentFit={'cover'}
-				/>
-			) : null}
 			<LinearGradient
 				colors={[topColor, bottomColor]}
-				locations={[0, 0.75]}
+				locations={[0, 0.65]}
 				style={StyleSheet.absoluteFill}
 			/>
 		</View>
@@ -570,8 +529,8 @@ const styles = StyleSheet.create({
 		letterSpacing: 1.2,
 	},
 	controlsCard: {
-		backgroundColor: 'rgba(255, 255, 255, 0.03)',
-		borderColor: 'rgba(255, 255, 255, 0.06)',
+		backgroundColor: 'rgba(255, 255, 255, 0.04)',
+		borderColor: 'rgba(255, 255, 255, 0.12)',
 		borderWidth: 1,
 		borderRadius: 28,
 		padding: 24,

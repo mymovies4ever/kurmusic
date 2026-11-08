@@ -45,7 +45,6 @@ import {
 import {
 	THEME_OPTIONS,
 	DEFAULT_TAB_OPTIONS,
-	PLAYER_BACKGROUND_OPTIONS,
 	UI_STYLE_OPTIONS,
 	STREAM_QUALITY_OPTIONS,
 	HOME_CONTENT_PREFERENCE_OPTIONS,
@@ -53,6 +52,7 @@ import {
 import { useLibraryStore } from '@application/state/library-store';
 import { useLibraryFilterStore } from '@application/state/library-filter-store';
 import { useEqualizerStore } from '@application/state/equalizer-store';
+import { useDownloadStats } from '@application/state/download-store';
 import {
 	useSettingsStore,
 	DEFAULT_HOME_CONTENT_PREFERENCES,
@@ -60,7 +60,7 @@ import {
 	useHomeContentPreferences,
 	useSetHomeContentPreferences,
 } from '@application/state/settings-store';
-import { useDownloadQueue, formatFileSize } from '@/src/hooks/use-download-queue';
+import { formatFileSize } from '@/src/hooks/use-download-queue';
 import { useEqualizer } from '@/src/hooks/use-equalizer';
 import { useClearDownloads } from '@/src/hooks/use-clear-downloads';
 import { useFactoryReset } from '@/src/hooks/use-factory-reset';
@@ -75,13 +75,9 @@ export default function SettingsScreen() {
 	const { colors } = useAppTheme();
 	const homeContentPreferences = useHomeContentPreferences();
 	const setHomeContentPreferences = useSetHomeContentPreferences();
-	const { tracks, playlists, favorites } = useLibraryStore(
-		useShallow((state) => ({
-			tracks: state.tracks,
-			playlists: state.playlists,
-			favorites: state.favorites,
-		}))
-	);
+	const tracksCount = useLibraryStore((state) => state.tracks.length);
+	const playlistsCount = useLibraryStore((state) => state.playlists.length);
+	const favoritesCount = useLibraryStore((state) => state.favorites.size);
 	const {
 		themePreference,
 		setThemePreference,
@@ -95,8 +91,6 @@ export default function SettingsScreen() {
 		setShowProviderLabel,
 		progressBarStyle,
 		setProgressBarStyle,
-		playerBackground,
-		setPlayerBackground,
 		uiStyle,
 		setUIStyle,
 		preferredStreamQuality,
@@ -125,8 +119,6 @@ export default function SettingsScreen() {
 			setShowProviderLabel: state.setShowProviderLabel,
 			progressBarStyle: state.progressBarStyle,
 			setProgressBarStyle: state.setProgressBarStyle,
-			playerBackground: state.playerBackground,
-			setPlayerBackground: state.setPlayerBackground,
 			uiStyle: state.uiStyle,
 			setUIStyle: state.setUIStyle,
 			preferredStreamQuality: state.preferredStreamQuality,
@@ -143,7 +135,7 @@ export default function SettingsScreen() {
 			resetDownloadLocation: state.resetDownloadLocation,
 		}))
 	);
-	const { stats } = useDownloadQueue();
+	const stats = useDownloadStats();
 	const { isEnabled: eqEnabled, currentPreset } = useEqualizer();
 	const { clearDownloads } = useClearDownloads();
 	const { factoryReset } = useFactoryReset();
@@ -451,12 +443,12 @@ export default function SettingsScreen() {
 						</View>
 					</View>
 					<View style={styles.heroMetrics}>
-						<SettingsHeroMetric label={'Tracks'} value={tracks.length.toString()} />
+						<SettingsHeroMetric label={'Tracks'} value={tracksCount.toString()} />
 						<SettingsHeroMetric
 							label={'Downloads'}
 							value={stats.completedCount.toString()}
 						/>
-						<SettingsHeroMetric label={'Favorites'} value={favorites.size.toString()} />
+						<SettingsHeroMetric label={'Favorites'} value={favoritesCount.toString()} />
 					</View>
 					<View style={styles.quickActions}>
 						<SettingsQuickAction
@@ -556,14 +548,6 @@ export default function SettingsScreen() {
 						value={progressBarStyle}
 						onValueChange={setProgressBarStyle}
 					/>
-					<SettingsSelect
-						icon={PaintbrushIcon}
-						title={'Background'}
-						options={PLAYER_BACKGROUND_OPTIONS}
-						value={playerBackground}
-						onValueChange={setPlayerBackground}
-						portalName={'player-background-select'}
-					/>
 				</SettingsSection>
 
 				<SettingsSection title={'Playback'}>
@@ -650,7 +634,7 @@ export default function SettingsScreen() {
 					<SettingsItem
 						icon={InfoIcon}
 						title={'Library stats'}
-						subtitle={`${tracks.length} tracks - ${playlists.length} playlists - ${favorites.size} favorites`}
+						subtitle={`${tracksCount} tracks - ${playlistsCount} playlists - ${favoritesCount} favorites`}
 					/>
 					<SettingsItem
 						icon={TrashIcon}
@@ -718,15 +702,19 @@ export default function SettingsScreen() {
 				</SettingsSection>
 			</PlayerAwareScrollView>
 
-			<EqualizerSheet isOpen={equalizerSheetOpen} onClose={closeEqualizerSheet} />
+			{equalizerSheetOpen && (
+				<EqualizerSheet isOpen={equalizerSheetOpen} onClose={closeEqualizerSheet} />
+			)}
 
-			<ActionSheet
-				isOpen={downloadLocationSheetVisible}
-				portalName={'download-location'}
-				onClose={() => setDownloadLocationSheetVisible(false)}
-				onSelect={handleSelectDownloadLocation}
-				groups={downloadLocationGroups}
-			/>
+			{downloadLocationSheetVisible && (
+				<ActionSheet
+					isOpen={downloadLocationSheetVisible}
+					portalName={'download-location'}
+					onClose={() => setDownloadLocationSheetVisible(false)}
+					onSelect={handleSelectDownloadLocation}
+					groups={downloadLocationGroups}
+				/>
+			)}
 
 			<ConfirmationDialog
 				visible={clearLibraryDialogVisible}
@@ -794,44 +782,48 @@ export default function SettingsScreen() {
 				onDismiss={() => setVersionDialogVisible(false)}
 			/>
 
-			<SettingsBottomSheet
-				isOpen={homeLanguagesSheetVisible}
-				onClose={handleCancelHomeLanguages}
-				portalName={'home-languages'}
-				title={'Home languages'}
-				showReset
-				onReset={handleResetDraftHomeLanguages}
-			>
-				{homeLanguageOptions.map((option) => {
-					const isEnabled = draftHomeLanguages.includes(option.value);
+			{homeLanguagesSheetVisible && (
+				<SettingsBottomSheet
+					isOpen={homeLanguagesSheetVisible}
+					onClose={handleCancelHomeLanguages}
+					portalName={'home-languages'}
+					title={'Home languages'}
+					showReset
+					onReset={handleResetDraftHomeLanguages}
+				>
+					{homeLanguageOptions.map((option) => {
+						const isEnabled = draftHomeLanguages.includes(option.value);
 
-					return (
-						<SettingsItem
-							key={option.value}
-							icon={option.icon}
-							title={option.label}
-							subtitle={'Used for home suggestions'}
-							rightElement={
-								<Switch
-									value={isEnabled}
-									onValueChange={(enabled) =>
-										handleDraftHomeLanguageToggle(option.value, enabled)
-									}
-								/>
-							}
-							onPress={() => handleDraftHomeLanguageToggle(option.value, !isEnabled)}
-						/>
-					);
-				})}
-				<View style={styles.homeLanguageActions}>
-					<Button mode={'text'} onPress={handleCancelHomeLanguages}>
-						Cancel
-					</Button>
-					<Button mode={'contained'} onPress={handleApplyHomeLanguages}>
-						Apply
-					</Button>
-				</View>
-			</SettingsBottomSheet>
+						return (
+							<SettingsItem
+								key={option.value}
+								icon={option.icon}
+								title={option.label}
+								subtitle={'Used for home suggestions'}
+								rightElement={
+									<Switch
+										value={isEnabled}
+										onValueChange={(enabled) =>
+											handleDraftHomeLanguageToggle(option.value, enabled)
+										}
+									/>
+								}
+								onPress={() =>
+									handleDraftHomeLanguageToggle(option.value, !isEnabled)
+								}
+							/>
+						);
+					})}
+					<View style={styles.homeLanguageActions}>
+						<Button mode={'text'} onPress={handleCancelHomeLanguages}>
+							Cancel
+						</Button>
+						<Button mode={'contained'} onPress={handleApplyHomeLanguages}>
+							Apply
+						</Button>
+					</View>
+				</SettingsBottomSheet>
+			)}
 		</PageLayout>
 	);
 }

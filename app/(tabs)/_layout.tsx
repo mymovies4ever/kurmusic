@@ -206,8 +206,8 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 	const activeDownloadsCount = useActiveDownloadsCount();
 	const tabBarHeight = TAB_BAR_HEIGHT + insets.bottom;
 
-	const glassBgColor = isDark ? 'rgba(18, 18, 24, 0.78)' : 'rgba(255, 255, 255, 0.85)';
-	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)';
+	const glassBgColor = isDark ? 'rgba(12, 12, 16, 0.70)' : 'rgba(255, 255, 255, 0.85)';
+	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.08)';
 
 	const currentRouteName = state.routes[state.index]?.name as TabId;
 	const visualIndex = tabOrder.indexOf(currentRouteName);
@@ -261,7 +261,7 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 		<View style={styles.tabBarContainer}>
 			{isGlass && (
 				<BlurView
-					intensity={65}
+					intensity={80}
 					tint={isDark ? 'dark' : 'light'}
 					experimentalBlurMethod={'dimezisBlurView'}
 					style={[
