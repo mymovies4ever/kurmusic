@@ -89,12 +89,20 @@ jobs:
                   CMAKE_CXX_COMPILER_LAUNCHER: ccache
               run: ./gradlew assembleRelease --build-cache --parallel -x lint -x lintVitalRelease -x lintVitalAnalyzeRelease -PreactNativeArchitectures=arm64-v8a
 
+            - name: Prepare APK Artifact
+              run: |
+                  mkdir -p build-artifacts
+                  find android/app/build/outputs -name "*.apk" -exec cp {} build-artifacts/ \;
+                  echo "Found APK files in build-artifacts:"
+                  ls -la build-artifacts/
+
             - name: Upload Release APK Artifact
               uses: actions/upload-artifact@v4
               with:
                   name: kurmusic-arm64-release
-                  path: android/app/build/outputs/apk/**/*.apk
+                  path: build-artifacts/*.apk
                   retention-days: 30
+                  if-no-files-found: error
 
     build-summary:
         name: Build Summary
