@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useMaterial3Theme } from '@pchmn/expo-material3-theme';
 import { useAccentColor } from '@/src/application/state/settings-store';
-import { MD3DarkTheme, adaptNavigationTheme } from 'react-native-paper';
+import { useColorScheme } from '@/src/hooks/use-color-scheme';
+import { MD3DarkTheme, MD3LightTheme, adaptNavigationTheme } from 'react-native-paper';
 import {
 	DarkTheme as NavigationDarkTheme,
 	DefaultTheme as NavigationDefaultTheme,
@@ -13,8 +14,8 @@ export type AppTheme = typeof MD3DarkTheme & {
 	colors: typeof MD3DarkTheme.colors & M3ColorScheme;
 };
 
-function createPaperTheme(colors: M3ColorScheme) {
-	const baseTheme = MD3DarkTheme;
+function createPaperTheme(colors: M3ColorScheme, isDark: boolean) {
+	const baseTheme = isDark ? MD3DarkTheme : MD3LightTheme;
 
 	return {
 		...baseTheme,
@@ -41,13 +42,14 @@ function createPaperTheme(colors: M3ColorScheme) {
 	} as AppTheme;
 }
 
-const { DarkTheme: AdaptedDarkTheme } = adaptNavigationTheme({
+const { LightTheme: AdaptedLightTheme, DarkTheme: AdaptedDarkTheme } = adaptNavigationTheme({
 	reactNavigationLight: NavigationDefaultTheme,
 	reactNavigationDark: NavigationDarkTheme,
 });
 
 export function useDynamicTheme() {
-	const isDark = true;
+	const colorScheme = useColorScheme();
+	const isDark = colorScheme === 'dark';
 	const accentColor = useAccentColor();
 
 	const {
@@ -74,31 +76,52 @@ export function useDynamicTheme() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [accentColor]);
 
-	const baseColors = dynamicTheme ? dynamicTheme.dark : M3Colors.dark;
+	const baseColors = dynamicTheme
+		? isDark
+			? dynamicTheme.dark
+			: dynamicTheme.light
+		: isDark
+			? M3Colors.dark
+			: M3Colors.light;
 
-	const colors = {
-		...baseColors,
-		...OLED_OVERRIDE,
-		elevation: {
-			...baseColors.elevation,
-			...OLED_OVERRIDE.elevation,
-		},
-	};
+	const colors = isDark
+		? {
+				...baseColors,
+				...OLED_OVERRIDE,
+				elevation: {
+					...baseColors.elevation,
+					...OLED_OVERRIDE.elevation,
+				},
+			}
+		: baseColors;
 
-	const paperTheme = createPaperTheme(colors as unknown as M3ColorScheme);
+	const paperTheme = createPaperTheme(colors as unknown as M3ColorScheme, isDark);
 
-	const navigationTheme = {
-		...AdaptedDarkTheme,
-		colors: {
-			...AdaptedDarkTheme.colors,
-			primary: colors.primary,
-			background: colors.background,
-			card: colors.surfaceContainerHigh,
-			text: colors.onSurface,
-			border: colors.outlineVariant,
-			notification: colors.error,
-		},
-	};
+	const navigationTheme = isDark
+		? {
+				...AdaptedDarkTheme,
+				colors: {
+					...AdaptedDarkTheme.colors,
+					primary: colors.primary,
+					background: colors.background,
+					card: colors.surfaceContainerHigh,
+					text: colors.onSurface,
+					border: colors.outlineVariant,
+					notification: colors.error,
+				},
+			}
+		: {
+				...AdaptedLightTheme,
+				colors: {
+					...AdaptedLightTheme.colors,
+					primary: colors.primary,
+					background: colors.background,
+					card: colors.surfaceContainerHigh,
+					text: colors.onSurface,
+					border: colors.outlineVariant,
+					notification: colors.error,
+				},
+			};
 
 	return {
 		paperTheme,
@@ -117,6 +140,7 @@ export function useDynamicTheme() {
 	};
 }
 
-export function getStaticTheme() {
-	return createPaperTheme(M3Colors.dark as unknown as M3ColorScheme);
+export function getStaticTheme(isDark = true) {
+	const colors = isDark ? M3Colors.dark : M3Colors.light;
+	return createPaperTheme(colors as unknown as M3ColorScheme, isDark);
 }

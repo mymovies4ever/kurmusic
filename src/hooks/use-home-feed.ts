@@ -46,16 +46,6 @@ function isRecentlyPlayedSection(section: FeedSection): boolean {
 function buildLocalSections(curated: ReturnType<typeof useCuratedContent>): FeedSection[] {
 	const sections: FeedSection[] = [];
 
-	if (curated.recentlyPlayed.length > 0) {
-		sections.push({
-			id: 'local-recently-played',
-			title: 'Recently Played',
-			compact: true,
-			items: curated.recentlyPlayed.map((track) => ({ type: 'track', data: track })),
-			source: 'local',
-		});
-	}
-
 	if (curated.favoriteTracks.length > 0) {
 		sections.push({
 			id: 'local-favorites',

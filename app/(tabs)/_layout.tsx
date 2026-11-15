@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Tabs, router } from 'expo-router';
 import { View, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Text, IconButton } from 'react-native-paper';
@@ -12,7 +11,6 @@ import { useActiveDownloadsCount } from '@/src/application/state/download-store'
 import {
 	useTabOrder,
 	useEnabledTabs,
-	useUIStyle,
 	type TabId,
 	DEFAULT_TAB_ORDER,
 } from '@/src/application/state/settings-store';
@@ -122,15 +120,10 @@ function getGreeting(): string {
 
 function TabHeader({ initialTabId }: { readonly initialTabId: TabId }) {
 	const currentTabId = useActiveTabListener(initialTabId);
-	const { colors, isDark } = useAppTheme();
-	const uiStyle = useUIStyle();
-	const isGlass = uiStyle === 'glass';
+	const { colors } = useAppTheme();
 	const insets = useSafeAreaInsets();
 	const title = TAB_CONFIG[currentTabId]?.title ?? '';
 	const isHomeFeed = currentTabId === 'feed';
-
-	const glassHeaderBg = isDark ? 'rgba(16, 16, 22, 0.76)' : 'rgba(255, 255, 255, 0.84)';
-	const glassHeaderBorder = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
 
 	return (
 		<View
@@ -138,9 +131,7 @@ function TabHeader({ initialTabId }: { readonly initialTabId: TabId }) {
 				styles.tabHeader,
 				{
 					paddingTop: insets.top + 4,
-					backgroundColor: isGlass ? glassHeaderBg : colors.background,
-					borderBottomWidth: isGlass ? 1 : 0,
-					borderBottomColor: isGlass ? glassHeaderBorder : 'transparent',
+					backgroundColor: colors.background,
 				},
 			]}
 		>
@@ -219,15 +210,10 @@ interface CustomTabBarProps extends BottomTabBarProps {
 
 function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: CustomTabBarProps) {
 	const { colors, isDark } = useAppTheme();
-	const uiStyle = useUIStyle();
-	const isGlass = uiStyle === 'glass';
 	const insets = useSafeAreaInsets();
 	const { width: windowWidth } = useWindowDimensions();
 	const activeDownloadsCount = useActiveDownloadsCount();
 	const tabBarHeight = TAB_BAR_HEIGHT + insets.bottom;
-
-	const glassBgColor = isDark ? 'rgba(16, 16, 22, 0.65)' : 'rgba(255, 255, 255, 0.85)';
-	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)';
 
 	const tabCount = Math.max(1, tabOrder.length);
 	const tabWidth = windowWidth / tabCount;
@@ -282,32 +268,16 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 
 	return (
 		<View style={styles.tabBarContainer}>
-			{isGlass ? (
-				<BlurView
-					intensity={85}
-					tint={isDark ? 'dark' : 'light'}
-					experimentalBlurMethod={'dimezisBlurView'}
-					style={[
-						StyleSheet.absoluteFill,
-						{
-							backgroundColor: glassBgColor,
-							borderTopWidth: 1,
-							borderTopColor: glassBorderColor,
-						},
-					]}
-				/>
-			) : (
-				<View
-					style={[
-						StyleSheet.absoluteFill,
-						{
-							backgroundColor: '#000000',
-							borderTopWidth: 1,
-							borderTopColor: '#282828',
-						},
-					]}
-				/>
-			)}
+			<View
+				style={[
+					StyleSheet.absoluteFill,
+					{
+						backgroundColor: isDark ? '#000000' : '#FFFFFF',
+						borderTopWidth: 1,
+						borderTopColor: isDark ? '#282828' : '#EAEAEA',
+					},
+				]}
+			/>
 			<View
 				style={[
 					styles.tabBar,

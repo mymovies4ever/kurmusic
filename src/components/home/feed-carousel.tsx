@@ -81,21 +81,16 @@ export const FeedCarousel = memo(function FeedCarousel({ section }: FeedCarousel
 		if (!isShuffled) toggleShuffle();
 	}, [trackItems, setQueue, isShuffled, toggleShuffle]);
 
-	const isGlass = uiStyle === 'glass';
 	const isNeo = uiStyle === 'neo';
 	const containerStyle = useMemo(() => {
 		switch (uiStyle) {
-			case 'clean':
-				return {
-					backgroundColor: 'transparent',
-				};
 			case 'neo':
 				return {
 					backgroundColor: colors.surfaceContainerLowest ?? colors.surfaceContainerLow,
 					borderColor: `${colors.primary}80`,
 					borderWidth: 1.1,
 				};
-			case 'glass':
+			case 'clean':
 			default:
 				return {
 					backgroundColor: 'transparent',
@@ -135,14 +130,7 @@ export const FeedCarousel = memo(function FeedCarousel({ section }: FeedCarousel
 					/>
 				</Animated.View>
 			)}
-			<View
-				style={[
-					styles.container,
-					containerStyle,
-					isGlass && styles.glassContainer,
-					isNeo && styles.neoContainer,
-				]}
-			>
+			<View style={[styles.container, containerStyle, isNeo && styles.neoContainer]}>
 				<View style={styles.header}>
 					<View style={styles.headerTitleRow}>
 						<Text

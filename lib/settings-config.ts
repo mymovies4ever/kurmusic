@@ -91,8 +91,7 @@ export const PLAYER_BACKGROUND_OPTIONS: {
 ];
 
 export const UI_STYLE_OPTIONS: { value: UIStyle; label: string; icon: LucideIcon }[] = [
-	{ value: 'glass', label: 'Full Liquid Glass (Default)', icon: SparklesIcon },
-	{ value: 'clean', label: 'Clean M3', icon: MonitorSmartphoneIcon },
+	{ value: 'clean', label: 'Spotify Clean (Default)', icon: MonitorSmartphoneIcon },
 	{ value: 'neo', label: 'Studio Neo', icon: SunIcon },
 ];
 

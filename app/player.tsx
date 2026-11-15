@@ -219,7 +219,7 @@ function PlayerScreenContent() {
 								dominantColor={colors.primary}
 								secondaryColor={colors.secondary}
 								isPlaying={isPlaying}
-								size={320}
+								size={260}
 							/>
 							<View
 								style={[styles.artworkWrapper, artworkLoaded && artworkShadowStyle]}
@@ -446,14 +446,14 @@ const styles = StyleSheet.create({
 	artworkContainer: {
 		flex: 1,
 		width: '100%',
-		maxHeight: '44%',
+		maxHeight: '34%',
 		justifyContent: 'center',
 		alignItems: 'center',
-		marginVertical: 8,
+		marginVertical: 6,
 	},
 	artworkWrapper: {
-		width: '90%',
-		maxWidth: 330,
+		width: '76%',
+		maxWidth: 260,
 		aspectRatio: 1,
 		borderRadius: 8,
 		overflow: 'hidden',
