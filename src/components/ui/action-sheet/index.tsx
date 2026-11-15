@@ -60,10 +60,10 @@ export function ActionSheet({
 
 	const handleItemPress = useCallback(
 		(itemId: string) => {
+			onClose();
 			onSelect(itemId);
-			sheetRef.current?.close();
 		},
-		[onSelect]
+		[onClose, onSelect]
 	);
 
 	if (!isOpen) {

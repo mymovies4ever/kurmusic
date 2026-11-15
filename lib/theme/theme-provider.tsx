@@ -7,7 +7,7 @@ import { M3Colors } from './colors';
 interface ThemeContextValue {
 	isDark: boolean;
 	isDynamic: boolean;
-	colors: typeof M3Colors.light;
+	colors: typeof M3Colors.dark;
 	theme: AppTheme;
 	updateTheme: (sourceColor: string) => void;
 	resetTheme: () => void;
@@ -35,7 +35,7 @@ export function AppThemeProvider({ children }: AppThemeProviderProps) {
 		() => ({
 			isDark,
 			isDynamic,
-			colors: colors as typeof M3Colors.light,
+			colors: colors as unknown as typeof M3Colors.dark,
 			theme: paperTheme,
 			updateTheme,
 			resetTheme,

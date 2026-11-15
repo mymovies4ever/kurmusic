@@ -53,6 +53,7 @@ export function SettingsSelect<T extends string>({
 
 	const handleSelect = useCallback(
 		(itemId: string) => {
+			setIsOpen(false);
 			onValueChange(itemId as T);
 		},
 		[onValueChange]

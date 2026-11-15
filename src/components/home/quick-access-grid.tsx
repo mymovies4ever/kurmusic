@@ -1,10 +1,10 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from 'react-native-paper';
 import { Play, Heart, Music } from 'lucide-react-native';
-import { useCuratedContent } from '@/src/hooks/use-curated-content';
-import { usePlaylists } from '@/src/application/state/library-store';
+import { useRecentlyPlayed } from '@/src/application/state/history-store';
+import { usePlaylists, useFavoriteTracks } from '@/src/application/state/library-store';
 import { usePlayerActions } from '@/src/hooks/use-player';
 import { getBestArtwork } from '@/src/domain/value-objects/artwork';
 import { useAppTheme } from '@/lib/theme';
@@ -24,47 +24,52 @@ interface QuickAccessItem {
 
 export const QuickAccessGrid = memo(function QuickAccessGrid() {
 	const { colors } = useAppTheme();
-	const { recentlyPlayed, favoriteTracks } = useCuratedContent(6);
+	const recentlyPlayed = useRecentlyPlayed(6);
+	const favoriteTracks = useFavoriteTracks();
 	const playlists = usePlaylists();
 	const { play, playQueue } = usePlayerActions();
 
 	// Combine top favorites, recent tracks, and playlists into up to 6 quick-access cards
-	const items: QuickAccessItem[] = [];
+	const items = useMemo<QuickAccessItem[]>(() => {
+		const result: QuickAccessItem[] = [];
 
-	if (favoriteTracks.length > 0) {
-		items.push({
-			id: 'liked-songs',
-			title: 'Liked Songs',
-			type: 'special-likes' as const,
-			trackCount: favoriteTracks.length,
-			tracks: favoriteTracks,
-		});
-	}
+		if (favoriteTracks.length > 0) {
+			result.push({
+				id: 'liked-songs',
+				title: 'Liked Songs',
+				type: 'special-likes' as const,
+				trackCount: favoriteTracks.length,
+				tracks: favoriteTracks,
+			});
+		}
 
-	for (const p of playlists) {
-		if (items.length >= 6) break;
-		const artwork = getBestArtwork(p.artwork, 150)?.url;
-		items.push({
-			id: `playlist-${p.id}`,
-			title: p.name,
-			type: 'playlist' as const,
-			artworkUrl: artwork,
-			playlist: p,
-		});
-	}
+		for (const p of playlists) {
+			if (result.length >= 6) break;
+			const artwork = getBestArtwork(p.artwork, 150)?.url;
+			result.push({
+				id: `playlist-${p.id}`,
+				title: p.name,
+				type: 'playlist' as const,
+				artworkUrl: artwork,
+				playlist: p,
+			});
+		}
 
-	for (const t of recentlyPlayed) {
-		if (items.length >= 6) break;
-		if (items.some((i) => i.id === t.id.value)) continue;
-		const artwork = getBestArtwork(t.artwork, 150)?.url;
-		items.push({
-			id: t.id.value,
-			title: t.title,
-			type: 'track' as const,
-			artworkUrl: artwork,
-			track: t,
-		});
-	}
+		for (const t of recentlyPlayed) {
+			if (result.length >= 6) break;
+			if (result.some((i) => i.id === t.id.value)) continue;
+			const artwork = getBestArtwork(t.artwork, 150)?.url;
+			result.push({
+				id: t.id.value,
+				title: t.title,
+				type: 'track' as const,
+				artworkUrl: artwork,
+				track: t,
+			});
+		}
+
+		return result;
+	}, [favoriteTracks, playlists, recentlyPlayed]);
 
 	const handleItemPress = useCallback(
 		(item: QuickAccessItem) => {
