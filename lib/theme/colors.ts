@@ -1,21 +1,37 @@
-export const SEED_COLOR = '#7C3AED';
+export const SEED_COLOR = '#1D8CF8';
+
+export const SpotifyColors = {
+	black: '#000000',
+	darkBase: '#121212',
+	surface: '#181818',
+	surfaceElevated: '#242424',
+	surfaceHighlight: '#2A2A2A',
+	border: '#282828',
+	borderSubtle: 'rgba(255, 255, 255, 0.08)',
+	blue: '#1D8CF8',
+	blueHover: '#3B9DF8',
+	green: '#1DB954',
+	textPrimary: '#FFFFFF',
+	textSecondary: '#B3B3B3',
+	textSubdued: '#6A6A6A',
+} as const;
 
 export const M3Colors = {
 	light: {
-		primary: '#6750A4',
+		primary: '#1D8CF8',
 		onPrimary: '#FFFFFF',
-		primaryContainer: '#EADDFF',
-		onPrimaryContainer: '#21005D',
+		primaryContainer: '#D6E9FF',
+		onPrimaryContainer: '#001D36',
 
-		secondary: '#625B71',
+		secondary: '#535F70',
 		onSecondary: '#FFFFFF',
-		secondaryContainer: '#E8DEF8',
-		onSecondaryContainer: '#1D192B',
+		secondaryContainer: '#D7E3F8',
+		onSecondaryContainer: '#101C2B',
 
-		tertiary: '#7D5260',
+		tertiary: '#6B5778',
 		onTertiary: '#FFFFFF',
-		tertiaryContainer: '#FFD8E4',
-		onTertiaryContainer: '#31111D',
+		tertiaryContainer: '#F3DAFF',
+		onTertiaryContainer: '#251432',
 
 		error: '#B3261E',
 		onError: '#FFFFFF',
@@ -41,12 +57,12 @@ export const M3Colors = {
 
 		inverseSurface: '#313033',
 		inverseOnSurface: '#F4EFF4',
-		inversePrimary: '#D0BCFF',
+		inversePrimary: '#1D8CF8',
 
 		shadow: '#000000',
 		scrim: '#000000',
 
-		surfaceTint: '#6750A4',
+		surfaceTint: '#1D8CF8',
 
 		elevation: {
 			level0: 'transparent',
@@ -59,59 +75,59 @@ export const M3Colors = {
 	},
 
 	dark: {
-		primary: '#D0BCFF',
-		onPrimary: '#381E72',
-		primaryContainer: '#4F378B',
-		onPrimaryContainer: '#EADDFF',
+		primary: '#1D8CF8',
+		onPrimary: '#FFFFFF',
+		primaryContainer: '#164E87',
+		onPrimaryContainer: '#D6E9FF',
 
-		secondary: '#CCC2DC',
-		onSecondary: '#332D41',
-		secondaryContainer: '#4A4458',
-		onSecondaryContainer: '#E8DEF8',
+		secondary: '#B3B3B3',
+		onSecondary: '#121212',
+		secondaryContainer: '#282828',
+		onSecondaryContainer: '#FFFFFF',
 
-		tertiary: '#EFB8C8',
-		onTertiary: '#492532',
-		tertiaryContainer: '#633B48',
-		onTertiaryContainer: '#FFD8E4',
+		tertiary: '#38BDF8',
+		onTertiary: '#001E2E',
+		tertiaryContainer: '#004C6D',
+		onTertiaryContainer: '#C7E7FF',
 
 		error: '#F2B8B5',
 		onError: '#601410',
 		errorContainer: '#8C1D18',
 		onErrorContainer: '#F9DEDC',
 
-		background: '#1C1B1F',
-		onBackground: '#E6E1E5',
+		background: '#121212',
+		onBackground: '#FFFFFF',
 
-		surface: '#1C1B1F',
-		onSurface: '#E6E1E5',
-		surfaceVariant: '#49454F',
-		onSurfaceVariant: '#CAC4D0',
+		surface: '#121212',
+		onSurface: '#FFFFFF',
+		surfaceVariant: '#181818',
+		onSurfaceVariant: '#B3B3B3',
 
-		outline: '#938F99',
-		outlineVariant: '#49454F',
+		outline: '#282828',
+		outlineVariant: '#383838',
 
-		surfaceContainerLowest: '#0F0D13',
-		surfaceContainerLow: '#1D1B20',
-		surfaceContainer: '#211F26',
-		surfaceContainerHigh: '#2B2930',
-		surfaceContainerHighest: '#36343B',
+		surfaceContainerLowest: '#000000',
+		surfaceContainerLow: '#121212',
+		surfaceContainer: '#181818',
+		surfaceContainerHigh: '#242424',
+		surfaceContainerHighest: '#2A2A2A',
 
 		inverseSurface: '#E6E1E5',
-		inverseOnSurface: '#313033',
-		inversePrimary: '#6750A4',
+		inverseOnSurface: '#121212',
+		inversePrimary: '#1D8CF8',
 
 		shadow: '#000000',
 		scrim: '#000000',
 
-		surfaceTint: '#D0BCFF',
+		surfaceTint: '#1D8CF8',
 
 		elevation: {
 			level0: 'transparent',
-			level1: '#2B2930',
-			level2: '#302D38',
-			level3: '#36323E',
-			level4: '#373340',
-			level5: '#3B3744',
+			level1: '#161616',
+			level2: '#181818',
+			level3: '#202020',
+			level4: '#242424',
+			level5: '#282828',
 		},
 	},
 } as const;
@@ -120,17 +136,17 @@ export const OLED_OVERRIDE = {
 	background: '#000000',
 	surface: '#000000',
 	surfaceContainerLowest: '#000000',
-	surfaceContainerLow: '#080808',
+	surfaceContainerLow: '#0A0A0A',
 	surfaceContainer: '#121212',
 	surfaceContainerHigh: '#181818',
-	surfaceContainerHighest: '#222222',
+	surfaceContainerHighest: '#242424',
 	elevation: {
 		level0: 'transparent',
 		level1: '#0D0D0D',
-		level2: '#141414',
-		level3: '#1A1A1A',
+		level2: '#121212',
+		level3: '#181818',
 		level4: '#202020',
-		level5: '#262626',
+		level5: '#242424',
 	},
 } as const;
 

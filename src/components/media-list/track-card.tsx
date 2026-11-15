@@ -22,7 +22,7 @@ import { getArtistNames } from '@/src/domain/entities/track';
 import { useTrackPlaybackInfo } from '@/src/application/state/player-store';
 import { useOpenTrackOptions } from '@/src/application/state/track-options-store';
 import { DownloadIndicator } from './download-indicator';
-import { useAppTheme, M3Shapes } from '@/lib/theme';
+import { useAppTheme } from '@/lib/theme';
 import { usePluginManifest } from '@/src/hooks/use-plugin-registry';
 import {
 	useOpenPlayerOnTrackClick,
@@ -170,21 +170,21 @@ const styles = StyleSheet.create({
 	artworkContainer: {
 		width: 128,
 		height: 128,
-		borderRadius: M3Shapes.medium,
+		borderRadius: 4,
 		justifyContent: 'center',
 		alignItems: 'center',
 		overflow: 'hidden',
 	},
 	compactArtworkContainer: {
-		borderRadius: 12,
+		borderRadius: 4,
 	},
 	artwork: {
 		width: 128,
 		height: 128,
-		borderRadius: M3Shapes.medium,
+		borderRadius: 4,
 	},
 	compactArtwork: {
-		borderRadius: 12,
+		borderRadius: 4,
 	},
 	infoContainer: {
 		marginTop: 8,

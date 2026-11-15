@@ -11,7 +11,7 @@ import { Image } from 'expo-image';
 import type { LucideIcon } from 'lucide-react-native';
 
 import { Icon } from '@/src/components/ui/icon';
-import { useAppTheme, M3Shapes } from '@/lib/theme';
+import { useAppTheme } from '@/lib/theme';
 
 const DEFAULT_SIZE = 48;
 
@@ -36,7 +36,7 @@ export const MediaArtwork = memo(function MediaArtwork({
 	recyclingKey,
 }: MediaArtworkProps) {
 	const { colors } = useAppTheme();
-	const borderRadius = shape === 'circular' ? size / 2 : M3Shapes.small;
+	const borderRadius = shape === 'circular' ? size / 2 : 4;
 
 	return (
 		<View

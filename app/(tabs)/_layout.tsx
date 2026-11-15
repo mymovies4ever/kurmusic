@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, memo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Tabs, router } from 'expo-router';
 import { View, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
@@ -6,7 +6,7 @@ import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Text, IconButton } from 'react-native-paper';
-import { LanguagesIcon } from 'lucide-react-native';
+import { LanguagesIcon, SettingsIcon } from 'lucide-react-native';
 import { useAppTheme, resolveDisplayFont } from '@/lib/theme';
 import { useActiveDownloadsCount } from '@/src/application/state/download-store';
 import {
@@ -23,9 +23,6 @@ import { StaticTabIcon } from '@/src/components/ui/static-tab-icon';
 import { Icon } from '@/src/components/ui/icon';
 
 const INDICATOR_HEIGHT = 32;
-const INDICATOR_TOP = 10;
-
-const TAB_SPRING_CONFIG = { damping: 20, stiffness: 200, mass: 0.5 };
 
 // Lightweight pub/sub so the tab bar can notify the header of active tab
 // changes without re-rendering the parent TabLayout (which would recreate
@@ -116,6 +113,13 @@ export default function TabLayout() {
 	);
 }
 
+function getGreeting(): string {
+	const hour = new Date().getHours();
+	if (hour < 12) return 'Good morning';
+	if (hour < 18) return 'Good afternoon';
+	return 'Good evening';
+}
+
 function TabHeader({ initialTabId }: { readonly initialTabId: TabId }) {
 	const currentTabId = useActiveTabListener(initialTabId);
 	const { colors, isDark } = useAppTheme();
@@ -129,20 +133,43 @@ function TabHeader({ initialTabId }: { readonly initialTabId: TabId }) {
 	const glassHeaderBorder = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
 
 	return (
-		<>
-			<View
-				style={[
-					styles.tabHeader,
-					{
-						paddingTop: insets.top,
-						backgroundColor: isGlass ? glassHeaderBg : colors.background,
-						borderBottomWidth: isGlass ? 1 : 0,
-						borderBottomColor: isGlass ? glassHeaderBorder : 'transparent',
-					},
-				]}
-			>
-				<View style={styles.headerActions}>
-					{isHomeFeed && (
+		<View
+			style={[
+				styles.tabHeader,
+				{
+					paddingTop: insets.top + 4,
+					backgroundColor: isGlass ? glassHeaderBg : colors.background,
+					borderBottomWidth: isGlass ? 1 : 0,
+					borderBottomColor: isGlass ? glassHeaderBorder : 'transparent',
+				},
+			]}
+		>
+			{isHomeFeed ? (
+				<>
+					<View style={styles.spotifyHomeHeaderLeft}>
+						<View
+							style={[
+								styles.brandLogoWrapper,
+								{ backgroundColor: colors.surfaceContainerHigh },
+							]}
+						>
+							<Image
+								source={require('@/assets/images/kur-logo.png')}
+								style={styles.brandLogo}
+								contentFit={'cover'}
+							/>
+						</View>
+						<Text
+							variant={'headlineSmall'}
+							style={[
+								styles.spotifyGreeting,
+								{ fontFamily: resolveDisplayFont('700'), color: colors.onSurface },
+							]}
+						>
+							{getGreeting()}
+						</Text>
+					</View>
+					<View style={styles.spotifyHeaderActions}>
 						<IconButton
 							icon={() => (
 								<Icon
@@ -159,35 +186,29 @@ function TabHeader({ initialTabId }: { readonly initialTabId: TabId }) {
 							}
 							accessibilityLabel={'Home languages'}
 						/>
-					)}
+						<IconButton
+							icon={() => (
+								<Icon as={SettingsIcon} size={22} color={colors.onSurfaceVariant} />
+							)}
+							onPress={() => router.push('/settings')}
+							accessibilityLabel={'Settings'}
+						/>
+					</View>
+				</>
+			) : (
+				<View style={styles.spotifyOtherHeader}>
+					<Text
+						variant={'headlineMedium'}
+						style={[
+							styles.spotifyPageTitle,
+							{ fontFamily: resolveDisplayFont('700'), color: colors.onSurface },
+						]}
+					>
+						{title}
+					</Text>
 				</View>
-				<Text
-					variant={'headlineMedium'}
-					style={[
-						styles.headerTitle,
-						{ fontFamily: resolveDisplayFont('700'), color: colors.onSurface },
-					]}
-				>
-					{title}
-				</Text>
-				<View style={styles.headerActionSpacer}>
-					{isHomeFeed && (
-						<View
-							style={[
-								styles.brandLogoWrapper,
-								{ backgroundColor: colors.surfaceContainerHigh },
-							]}
-						>
-							<Image
-								source={require('@/assets/images/kur-logo.png')}
-								style={styles.brandLogo}
-								contentFit={'cover'}
-							/>
-						</View>
-					)}
-				</View>
-			</View>
-		</>
+			)}
+		</View>
 	);
 }
 
@@ -205,12 +226,12 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 	const activeDownloadsCount = useActiveDownloadsCount();
 	const tabBarHeight = TAB_BAR_HEIGHT + insets.bottom;
 
-	const glassBgColor = isDark ? 'rgba(16, 16, 22, 0.58)' : 'rgba(255, 255, 255, 0.82)';
-	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.08)';
+	const glassBgColor = isDark ? 'rgba(16, 16, 22, 0.65)' : 'rgba(255, 255, 255, 0.85)';
+	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)';
 
 	const tabCount = Math.max(1, tabOrder.length);
 	const tabWidth = windowWidth / tabCount;
-	const indicatorWidth = Math.min(56, tabWidth - 10);
+	const indicatorWidth = Math.min(48, tabWidth - 12);
 
 	const currentRouteName = state.routes[state.index]?.name as TabId;
 	const visualIndex = tabOrder.indexOf(currentRouteName);
@@ -261,7 +282,7 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 
 	return (
 		<View style={styles.tabBarContainer}>
-			{isGlass && (
+			{isGlass ? (
 				<BlurView
 					intensity={85}
 					tint={isDark ? 'dark' : 'light'}
@@ -275,12 +296,22 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 						},
 					]}
 				/>
+			) : (
+				<View
+					style={[
+						StyleSheet.absoluteFill,
+						{
+							backgroundColor: '#000000',
+							borderTopWidth: 1,
+							borderTopColor: '#282828',
+						},
+					]}
+				/>
 			)}
 			<View
 				style={[
 					styles.tabBar,
 					{
-						backgroundColor: isGlass ? 'transparent' : colors.surfaceContainer,
 						height: tabBarHeight,
 						paddingBottom: insets.bottom,
 					},
@@ -292,12 +323,10 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 							styles.indicator,
 							{
 								width: indicatorWidth,
-								backgroundColor: isGlass
-									? `${colors.primary}25`
-									: colors.secondaryContainer,
-								borderWidth: isGlass ? 1 : 0,
-								borderColor: isGlass ? `${colors.primary}50` : 'transparent',
-								top: INDICATOR_TOP,
+								backgroundColor: `${colors.primary}20`,
+								borderWidth: 1,
+								borderColor: `${colors.primary}45`,
+								top: 6,
 							},
 							animatedIndicatorStyle,
 						]}
@@ -329,7 +358,7 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 										source={config.lottieSource}
 										isFocused={isFocused}
 										focusedColor={colors.primary}
-										inactiveColor={colors.onSurfaceVariant}
+										inactiveColor={'#B3B3B3'}
 										badgeCount={downloadBadgeCount}
 									/>
 								) : (
@@ -337,14 +366,21 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 										icon={config.icon}
 										isFocused={isFocused}
 										focusedColor={colors.primary}
-										inactiveColor={colors.onSurfaceVariant}
+										inactiveColor={'#B3B3B3'}
 									/>
 								)}
-								<TabLabel
-									label={config.title ?? ''}
-									isFocused={isFocused}
-									color={colors.primary}
-								/>
+								<Text
+									numberOfLines={1}
+									style={[
+										styles.tabLabel,
+										{
+											color: isFocused ? colors.primary : '#B3B3B3',
+											fontWeight: isFocused ? '700' : '500',
+										},
+									]}
+								>
+									{config.title}
+								</Text>
 							</Pressable>
 						);
 					})}
@@ -354,33 +390,6 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 	);
 }
 
-interface TabLabelProps {
-	label: string;
-	isFocused: boolean;
-	color: string;
-}
-
-const TabLabel = memo(function TabLabel({ label, isFocused, color }: TabLabelProps) {
-	const opacity = useSharedValue(isFocused ? 1 : 0);
-	const translateY = useSharedValue(isFocused ? 0 : 4);
-
-	useEffect(() => {
-		opacity.value = withSpring(isFocused ? 1 : 0, TAB_SPRING_CONFIG);
-		translateY.value = withSpring(isFocused ? 0 : 4, TAB_SPRING_CONFIG);
-	}, [isFocused, opacity, translateY]);
-
-	const animatedStyle = useAnimatedStyle(() => ({
-		opacity: opacity.value,
-		transform: [{ translateY: translateY.value }],
-	}));
-
-	return (
-		<Animated.Text numberOfLines={1} style={[styles.tabLabel, { color }, animatedStyle]}>
-			{label}
-		</Animated.Text>
-	);
-});
-
 const styles = StyleSheet.create({
 	layoutRoot: {
 		flex: 1,
@@ -388,37 +397,47 @@ const styles = StyleSheet.create({
 	tabHeader: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		paddingHorizontal: 4,
-		paddingBottom: 4,
+		justifyContent: 'space-between',
+		paddingBottom: 6,
 	},
-	headerActions: {
+	spotifyHomeHeaderLeft: {
+		flex: 1,
 		flexDirection: 'row',
 		alignItems: 'center',
-		width: 112,
+		gap: 12,
+		paddingLeft: 16,
 	},
-	headerActionSpacer: {
-		width: 112,
-		alignItems: 'flex-end',
+	spotifyGreeting: {
+		fontWeight: '700',
+		fontSize: 22,
+	},
+	spotifyHeaderActions: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		paddingRight: 6,
+	},
+	spotifyOtherHeader: {
+		flex: 1,
+		paddingHorizontal: 16,
+		paddingVertical: 4,
+	},
+	spotifyPageTitle: {
+		fontWeight: '800',
+		fontSize: 26,
 	},
 	brandLogoWrapper: {
-		width: 42,
-		height: 42,
-		borderRadius: 12,
+		width: 34,
+		height: 34,
+		borderRadius: 17,
 		overflow: 'hidden',
-		marginRight: 12,
 		justifyContent: 'center',
 		alignItems: 'center',
 		borderWidth: 1,
-		borderColor: 'rgba(255, 255, 255, 0.1)',
+		borderColor: 'rgba(255, 255, 255, 0.15)',
 	},
 	brandLogo: {
-		width: 42,
-		height: 42,
-		borderRadius: 12,
-	},
-	headerTitle: {
-		flex: 1,
-		textAlign: 'center',
+		width: 34,
+		height: 34,
 	},
 	tabBarContainer: {
 		position: 'absolute',

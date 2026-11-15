@@ -1,18 +1,10 @@
 import { memo, useEffect, useRef, useMemo } from 'react';
 import { StyleSheet } from 'react-native';
-import Animated, {
-	useAnimatedStyle,
-	useSharedValue,
-	withSpring,
-	FadeIn,
-	FadeOut,
-} from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import LottieView from 'lottie-react-native';
 import type { AnimationObject } from 'lottie-react-native';
 
-const LABEL_HEIGHT = 18;
-const ICON_SIZE = 28;
-const TAB_SPRING_CONFIG = { damping: 20, stiffness: 200, mass: 0.5 };
+const ICON_SIZE = 24;
 
 function hexToRgbArray(hex: string): [number, number, number, number] {
 	const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -57,11 +49,6 @@ export const LottieTabIcon = memo(function LottieTabIcon({
 }: LottieTabIconProps) {
 	const lottieRef = useRef<LottieView>(null);
 	const wasFocusedRef = useRef(isFocused);
-	const translateY = useSharedValue(isFocused ? 0 : LABEL_HEIGHT / 2);
-
-	useEffect(() => {
-		translateY.value = withSpring(isFocused ? 0 : LABEL_HEIGHT / 2, TAB_SPRING_CONFIG);
-	}, [isFocused, translateY]);
 
 	useEffect(() => {
 		if (isFocused && !wasFocusedRef.current) {
@@ -74,10 +61,6 @@ export const LottieTabIcon = memo(function LottieTabIcon({
 		wasFocusedRef.current = isFocused;
 	}, [isFocused]);
 
-	const animatedStyle = useAnimatedStyle(() => ({
-		transform: [{ translateY: translateY.value }],
-	}));
-
 	const currentColor = isFocused ? focusedColor : inactiveColor;
 	const coloredSource = useMemo(
 		() => replaceColorsInSource(source, currentColor),
@@ -87,7 +70,7 @@ export const LottieTabIcon = memo(function LottieTabIcon({
 	const showBadge = badgeCount !== undefined && badgeCount > 0;
 
 	return (
-		<Animated.View style={[styles.iconContainer, animatedStyle]}>
+		<Animated.View style={styles.iconContainer}>
 			<LottieView
 				ref={lottieRef}
 				source={coloredSource}

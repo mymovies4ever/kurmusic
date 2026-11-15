@@ -1,6 +1,6 @@
 import {
-	NewspaperIcon,
-	MusicIcon,
+	HomeIcon,
+	LibraryIcon,
 	DownloadIcon,
 	SearchIcon,
 	SparklesIcon,
@@ -25,7 +25,7 @@ export type TabConfig = BottomTabNavigationOptions & {
 export const TAB_CONFIG: Record<TabId, TabConfig> = {
 	feed: {
 		title: 'Home',
-		icon: NewspaperIcon,
+		icon: HomeIcon,
 		lottieSource: FeedLottie,
 	},
 	search: {
@@ -34,8 +34,8 @@ export const TAB_CONFIG: Record<TabId, TabConfig> = {
 		lottieSource: SearchLottie,
 	},
 	library: {
-		title: 'Library',
-		icon: MusicIcon,
+		title: 'Your Library',
+		icon: LibraryIcon,
 		lottieSource: LibraryLottie,
 	},
 	downloads: {
@@ -56,4 +56,4 @@ export const TAB_CONFIG: Record<TabId, TabConfig> = {
 
 export const TAB_ROUTES = ['/feed', '/search', '/library', '/downloads', '/settings', '/rewind'];
 
-export const TAB_BAR_HEIGHT = 75;
+export const TAB_BAR_HEIGHT = 60;

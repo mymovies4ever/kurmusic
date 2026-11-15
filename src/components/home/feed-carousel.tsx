@@ -87,9 +87,7 @@ export const FeedCarousel = memo(function FeedCarousel({ section }: FeedCarousel
 		switch (uiStyle) {
 			case 'clean':
 				return {
-					backgroundColor: colors.surfaceContainerLow,
-					borderColor: colors.outlineVariant,
-					borderWidth: StyleSheet.hairlineWidth,
+					backgroundColor: 'transparent',
 				};
 			case 'neo':
 				return {
@@ -100,9 +98,7 @@ export const FeedCarousel = memo(function FeedCarousel({ section }: FeedCarousel
 			case 'glass':
 			default:
 				return {
-					backgroundColor: `${colors.surfaceContainerLow}CC`,
-					borderColor: `${colors.primary}40`,
-					borderWidth: 1,
+					backgroundColor: 'transparent',
 				};
 		}
 	}, [uiStyle, colors]);
@@ -303,16 +299,13 @@ const styles = StyleSheet.create({
 	},
 	container: {
 		gap: 12,
-		paddingVertical: 14,
-		paddingTop: 16,
-		borderRadius: 28,
-		overflow: 'hidden',
+		paddingVertical: 10,
 	},
 	glassContainer: {
-		shadowOpacity: 0.08,
+		shadowOpacity: 0,
 	},
 	neoContainer: {
-		borderRadius: 30,
+		borderRadius: 16,
 		shadowOpacity: 0.22,
 		shadowRadius: 24,
 	},
@@ -327,7 +320,9 @@ const styles = StyleSheet.create({
 		gap: 12,
 	},
 	title: {
-		fontWeight: '700',
+		fontWeight: '800',
+		fontSize: 20,
+		letterSpacing: -0.4,
 		flex: 1,
 	},
 	headerActions: {

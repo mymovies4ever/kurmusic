@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react';
 import { ScrollView, Pressable, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import { useAppTheme, M3Shapes } from '@/lib/theme';
+import { useAppTheme } from '@/lib/theme';
 import type { FeedFilterChip } from '@/src/domain/entities/feed-section';
 
 interface FeedFilterChipsProps {
@@ -77,16 +77,15 @@ const FilterChip = memo(function FilterChip({
 			style={[
 				styles.chip,
 				{
-					backgroundColor: isActive
-						? colors.secondaryContainer
-						: colors.surfaceContainerHigh,
+					backgroundColor: isActive ? colors.primary : '#2A2A2A',
 				},
 			]}
 		>
 			<Text
-				variant={'labelLarge'}
+				variant={'labelMedium'}
 				style={{
-					color: isActive ? colors.onSecondaryContainer : colors.onSurfaceVariant,
+					color: isActive ? '#000000' : '#FFFFFF',
+					fontWeight: '600',
 				}}
 			>
 				{text}
@@ -99,10 +98,11 @@ const styles = StyleSheet.create({
 	container: {
 		paddingHorizontal: 16,
 		gap: 8,
+		paddingVertical: 4,
 	},
 	chip: {
 		paddingHorizontal: 16,
-		paddingVertical: 8,
-		borderRadius: M3Shapes.small,
+		paddingVertical: 7,
+		borderRadius: 20,
 	},
 });

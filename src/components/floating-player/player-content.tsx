@@ -8,9 +8,9 @@ import React, { useCallback, useMemo } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { IconButton, Text } from 'react-native-paper';
-import { Play, Pause, SkipBack, SkipForward, ListMusic } from 'lucide-react-native';
+import { Play, Pause, SkipBack, SkipForward } from 'lucide-react-native';
 import { AudioWaveform } from '@/src/components/ui/audio-waveform';
-import { useAppTheme, M3Shapes } from '@/lib/theme';
+import { useAppTheme } from '@/lib/theme';
 import type { PlayerContentProps } from './types';
 
 export const PlayerContent = React.memo(function PlayerContent({
@@ -27,11 +27,11 @@ export const PlayerContent = React.memo(function PlayerContent({
 	onOpenQueue,
 }: PlayerContentProps) {
 	const { colors } = useAppTheme();
-	const titleStyle = useMemo(() => ({ color: colors.onSurface }), [colors.onSurface]);
-	const subtitleStyle = useMemo(
-		() => ({ color: colors.onSurfaceVariant }),
-		[colors.onSurfaceVariant]
+	const titleStyle = useMemo(
+		() => ({ color: '#FFFFFF', fontWeight: '700' as const, fontSize: 13 }),
+		[]
 	);
+	const subtitleStyle = useMemo(() => ({ color: '#B3B3B3', fontSize: 11 }), []);
 
 	const playPauseIcon = useCallback(
 		({ size, color }: { size: number; color: string }) =>
@@ -57,20 +57,13 @@ export const PlayerContent = React.memo(function PlayerContent({
 		[]
 	);
 
-	const queueIcon = useCallback(
-		({ size, color }: { size: number; color: string }) => (
-			<ListMusic size={size} color={color} />
-		),
-		[]
-	);
-
 	return (
 		<View style={styles.content}>
 			<View style={styles.artworkContainer}>
 				<Image
 					source={{ uri: artworkUrl }}
 					style={styles.artwork}
-					contentFit={'contain'}
+					contentFit={'cover'}
 					transition={200}
 					cachePolicy={'memory-disk'}
 					recyclingKey={trackId}
@@ -84,48 +77,39 @@ export const PlayerContent = React.memo(function PlayerContent({
 			</View>
 
 			<View style={styles.trackInfo}>
-				<Text variant={'titleMedium'} numberOfLines={1} style={[styles.title, titleStyle]}>
+				<Text numberOfLines={1} style={[styles.title, titleStyle]}>
 					{title}
 				</Text>
-				<Text
-					variant={'bodySmall'}
-					numberOfLines={1}
-					style={[styles.subtitle, subtitleStyle]}
-				>
+				<Text numberOfLines={1} style={[styles.subtitle, subtitleStyle]}>
 					{artistNames}
 				</Text>
 			</View>
 
 			<View style={styles.controls}>
 				<IconButton
-					icon={queueIcon}
-					size={18}
-					onPress={onOpenQueue}
-					accessibilityLabel={'Open queue'}
-					style={styles.controlButton}
-				/>
-				<IconButton
 					icon={skipBackIcon}
 					size={18}
+					iconColor={'#FFFFFF'}
 					onPress={onSkipPrevious}
 					accessibilityLabel={'Skip to previous track'}
 					style={styles.controlButton}
 				/>
 				<IconButton
 					icon={playPauseIcon}
-					size={22}
-					iconColor={colors.primary}
+					size={20}
+					iconColor={'#000000'}
 					onPress={onPlayPause}
 					disabled={isLoading}
 					style={[
 						styles.controlButton,
 						styles.primaryControlButton,
-						{ backgroundColor: `${colors.primary}22` },
+						{ backgroundColor: colors.primary },
 					]}
 				/>
 				<IconButton
 					icon={skipForwardIcon}
 					size={18}
+					iconColor={'#FFFFFF'}
 					onPress={onSkipNext}
 					accessibilityLabel={'Skip to next track'}
 					style={styles.controlButton}
@@ -140,51 +124,53 @@ const styles = StyleSheet.create({
 		flex: 1,
 		flexDirection: 'row',
 		alignItems: 'center',
-		paddingHorizontal: 14,
-		paddingTop: 10,
-		paddingBottom: 6,
+		paddingHorizontal: 10,
+		paddingVertical: 6,
 	},
 	artworkContainer: {
 		position: 'relative',
 		overflow: 'hidden',
-		borderRadius: M3Shapes.small,
+		borderRadius: 4,
 	},
 	artwork: {
-		width: 44,
-		height: 44,
-		borderRadius: M3Shapes.small,
+		width: 42,
+		height: 42,
+		borderRadius: 4,
 	},
 	loadingOverlay: {
 		...StyleSheet.absoluteFillObject,
 		alignItems: 'center',
 		justifyContent: 'center',
 		backgroundColor: 'rgba(0,0,0,0.3)',
-		borderRadius: M3Shapes.small,
+		borderRadius: 4,
 	},
 	trackInfo: {
 		flex: 1,
 		minWidth: 0,
-		marginHorizontal: 12,
-		paddingRight: 6,
+		marginHorizontal: 10,
+		paddingRight: 4,
 		justifyContent: 'center',
 	},
 	title: {
-		fontWeight: '600',
+		fontSize: 13,
+		fontWeight: '700',
 	},
 	subtitle: {
-		marginTop: 1,
+		fontSize: 11,
+		marginTop: 2,
 	},
 	controls: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		flexShrink: 0,
-		marginRight: -4,
+		gap: 2,
 	},
 	controlButton: {
 		margin: 0,
 	},
 	primaryControlButton: {
-		marginHorizontal: 2,
-		borderRadius: 22,
+		width: 34,
+		height: 34,
+		borderRadius: 17,
 	},
 });

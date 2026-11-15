@@ -121,12 +121,18 @@ jobs:
               uses: softprops/action-gh-release@v2
               with:
                   tag_name: test-build
-                  name: KurMusic Test Preview (No OTA)
+                  name: KurMusic Spotify Redesign Test Build (No OTA)
                   body: |
-                      ### KurMusic Test Build (No OTA)
-                      This is an experimental standalone test build for validating Glassmorphism, Settings as a Tab, Mini-Player swipe dismiss, and optimizations.
+                      ### KurMusic Spotify UI Redesign & Black/Blue Theme Test Build
+                      This standalone test build features:
+                      - Complete Spotify UI Clone (Spotify 2x3 Quick-Access Grid, Genre Browse Cards, Full-Pill Chips, 4-8px radius cards)
+                      - Deep Black & Electric Blue Theme (#000000 / #121212 surfaces, #1D8CF8 Electric Blue accents)
+                      - Spotify Bottom Tab Bar with compact 60px height & permanent labels
+                      - Spotify Floating Mini-Player with bottom edge progress line
+                      - Fullscreen Spotify Player with collapse chevron, center context header, and audio info row
+                      - Cleaned dependencies and code optimizations
 
-                      *Note: This is a pre-release and will NOT trigger in-app OTA notifications.*
+                      *Note: This is an isolated pre-release and will NOT trigger in-app OTA notifications.*
                   files: build-artifacts/kurmusic-test-preview.apk
                   draft: false
                   prerelease: true

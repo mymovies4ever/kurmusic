@@ -11,7 +11,12 @@ import { AlertCircleIcon, MusicIcon } from 'lucide-react-native';
 import { PageLayout } from '@/src/components/ui/page-layout';
 import { PlayerAwareScrollView } from '@/src/components/ui/player-aware-scroll-view';
 import { EmptyState } from '@/src/components/ui/empty-state';
-import { FeedCarousel, FeedSectionSkeleton, HomeFeedSkeleton } from '@/src/components/home';
+import {
+	FeedCarousel,
+	FeedSectionSkeleton,
+	HomeFeedSkeleton,
+	QuickAccessGrid,
+} from '@/src/components/home';
 import { useHomeFeed } from '@/src/hooks/use-home-feed';
 import { useHomeFeedStore } from '@/src/application/state/home-feed-store';
 import { useAppTheme } from '@/lib/theme';
@@ -133,6 +138,7 @@ export default function HomeScreen() {
 
 				{hasData && (
 					<View style={styles.content}>
+						<QuickAccessGrid />
 						{visibleLocalSections.map((section) => (
 							<FeedCarousel key={section.id} section={section} />
 						))}

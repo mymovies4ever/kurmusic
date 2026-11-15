@@ -4,7 +4,7 @@ import { DiscIcon } from 'lucide-react-native';
 import { Text } from 'react-native-paper';
 import { Icon } from '@/src/components/ui/icon';
 import { getBestArtwork } from '@/src/domain/value-objects/artwork';
-import { useAppTheme, M3Shapes } from '@/lib/theme';
+import { useAppTheme } from '@/lib/theme';
 import type { Album } from '@/src/domain/entities/album';
 
 interface AlbumCardProps {
@@ -64,12 +64,13 @@ const styles = StyleSheet.create({
 	albumArtwork: {
 		width: 140,
 		height: 140,
-		borderRadius: M3Shapes.medium,
+		borderRadius: 4,
 		alignItems: 'center',
 		justifyContent: 'center',
 		marginBottom: 8,
 	},
 	albumTitle: {
-		fontWeight: '500',
+		fontWeight: '600',
+		fontSize: 13,
 	},
 });
