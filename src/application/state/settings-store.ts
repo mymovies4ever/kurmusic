@@ -19,7 +19,7 @@ export type ProgressBarStyle =
 	| 'pulse-dots';
 export type PlayerBackground = 'artwork-blur' | 'artwork-solid' | 'theme-color';
 export type DownloadLocationMode = 'internal' | 'music' | 'custom';
-export type UIStyle = 'glass' | 'clean' | 'neo';
+export type UIStyle = 'clean' | 'neo';
 export type HomeContentPreference =
 	| 'Hindi'
 	| 'Malayalam'
@@ -121,7 +121,7 @@ export async function syncNativeLanguageCookie(
 	}
 }
 
-interface SettingsState {
+export interface SettingsState {
 	themePreference: ThemePreference;
 	defaultTab: DefaultTab;
 	homeContentPreferences: HomeContentPreference[];
@@ -261,7 +261,7 @@ export const useSettingsStore = create<SettingsState>()(
 			playerBackground: 'theme-color',
 			uiStyle: 'clean',
 			preferredStreamQuality: 'high',
-			autoplaySimilarOnQueueEnd: true,
+			autoplaySimilarOnQueueEnd: false,
 			downloadLocationMode: 'internal',
 			musicDownloadDirectoryUri: null,
 			musicDownloadDirectoryName: null,
@@ -433,7 +433,7 @@ export const useSettingsStore = create<SettingsState>()(
 					playerBackground: 'theme-color',
 					uiStyle: 'clean',
 					preferredStreamQuality: 'high',
-					autoplaySimilarOnQueueEnd: true,
+					autoplaySimilarOnQueueEnd: false,
 					downloadLocationMode: 'internal',
 					musicDownloadDirectoryUri: null,
 					musicDownloadDirectoryName: null,
@@ -477,7 +477,7 @@ export const useSettingsStore = create<SettingsState>()(
 				return {
 					...state,
 					accentColor: state?.accentColor ?? '#1D8CF8',
-					uiStyle: state?.uiStyle ?? 'clean',
+					uiStyle: state?.uiStyle === 'neo' ? 'neo' : 'clean',
 					downloadLocationMode: state?.downloadLocationMode ?? 'internal',
 					homeContentPreferences: normalizeHomeContentPreferences(safeHomePreferences),
 				};

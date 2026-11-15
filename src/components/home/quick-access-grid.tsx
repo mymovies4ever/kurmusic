@@ -23,7 +23,7 @@ interface QuickAccessItem {
 }
 
 export const QuickAccessGrid = memo(function QuickAccessGrid() {
-	const { colors } = useAppTheme();
+	const { colors, isDark } = useAppTheme();
 	const recentlyPlayed = useRecentlyPlayed(6);
 	const favoriteTracks = useFavoriteTracks();
 	const playlists = usePlaylists();
@@ -71,6 +71,13 @@ export const QuickAccessGrid = memo(function QuickAccessGrid() {
 		return result;
 	}, [favoriteTracks, playlists, recentlyPlayed]);
 
+	// Keep an even number of cards (2, 4, or 6) so there are no awkward orphaned cards in the 2-column grid
+	const displayedItems = useMemo(() => {
+		const max = Math.min(6, items.length);
+		const evenCount = max - (max % 2);
+		return items.slice(0, evenCount);
+	}, [items]);
+
 	const handleItemPress = useCallback(
 		(item: QuickAccessItem) => {
 			if (item.type === 'special-likes' && item.tracks) {
@@ -84,19 +91,27 @@ export const QuickAccessGrid = memo(function QuickAccessGrid() {
 		[play, playQueue]
 	);
 
-	if (items.length === 0) return null;
+	if (displayedItems.length === 0) return null;
 
 	return (
 		<View style={styles.container}>
 			<View style={styles.grid}>
-				{items.slice(0, 6).map((item) => {
+				{displayedItems.map((item) => {
 					return (
 						<Pressable
 							key={item.id}
 							onPress={() => handleItemPress(item)}
 							style={({ pressed }) => [
 								styles.card,
-								{ backgroundColor: pressed ? '#2E2E2E' : '#242424' },
+								{
+									backgroundColor: pressed
+										? isDark
+											? '#2E2E2E'
+											: '#E4E4E6'
+										: isDark
+											? '#242424'
+											: '#F0F0F2',
+								},
 							]}
 						>
 							<View style={styles.artContainer}>
@@ -116,19 +131,27 @@ export const QuickAccessGrid = memo(function QuickAccessGrid() {
 										contentFit={'cover'}
 									/>
 								) : (
-									<View style={styles.fallbackArt}>
-										<Music size={20} color={'#888888'} />
+									<View
+										style={[
+											styles.fallbackArt,
+											{ backgroundColor: isDark ? '#1E1E1E' : '#E0E0E2' },
+										]}
+									>
+										<Music size={20} color={isDark ? '#888888' : '#777777'} />
 									</View>
 								)}
 							</View>
 							<Text
 								numberOfLines={2}
-								style={[styles.cardTitle, { color: '#FFFFFF' }]}
+								style={[
+									styles.cardTitle,
+									{ color: isDark ? '#FFFFFF' : '#121212' },
+								]}
 							>
 								{item.title}
 							</Text>
 							<View style={[styles.miniPlayBtn, { backgroundColor: colors.primary }]}>
-								<Play size={12} color={'#000000'} fill={'#000000'} />
+								<Play size={12} color={'#FFFFFF'} fill={'#FFFFFF'} />
 							</View>
 						</Pressable>
 					);

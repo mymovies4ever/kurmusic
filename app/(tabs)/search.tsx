@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, StyleSheet, Pressable, TextInput } from 'react-native';
+import { View, StyleSheet, Pressable, TextInput, ScrollView } from 'react-native';
 import { PlayerAwareScrollView } from '@/src/components/ui/player-aware-scroll-view';
 import { PageLayout } from '@/src/components/ui/page-layout';
 import {
@@ -12,7 +12,7 @@ import {
 	SearchXIcon,
 	DownloadIcon,
 	LibraryBigIcon,
-	PlugIcon,
+	GlobeIcon,
 } from 'lucide-react-native';
 import { SelectableTrackListItem } from '@/src/components/media-list/selectable-track-list-item';
 import { Icon } from '@/src/components/ui/icon';
@@ -41,6 +41,18 @@ import type { Track } from '@/src/domain/entities/track';
 const BATCH_ACTION_BAR_PADDING = 120;
 const DEFAULT_CONTENT_PADDING = 20;
 const MAX_RESULTS_PER_SECTION = 20;
+
+const DEFAULT_SEARCH_SUGGESTIONS = [
+	'Romance',
+	'Malayalam',
+	'Tamil',
+	'Bollywood',
+	'Chill',
+	'Workout',
+	'Party',
+	'Acoustic',
+	'90s Hits',
+];
 
 function OverflowButton({
 	totalCount,
@@ -75,6 +87,7 @@ type ExpandedSectionKey =
 	| 'explore-artists';
 
 export default function SearchScreen() {
+	const { isDark } = useAppTheme();
 	const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 	const [selectionSource, setSelectionSource] = useState<'library' | 'explore'>('library');
 	const [expandedSections, setExpandedSections] = useState<Set<ExpandedSectionKey>>(new Set());
@@ -205,7 +218,7 @@ export default function SearchScreen() {
 		const sections = [
 			{ key: 'library' as const, hasResults: hasLibraryResults },
 			{ key: 'downloads' as const, hasResults: hasDownloadsResults },
-			{ key: 'plugins' as const, hasResults: hasExploreResults || isSearching },
+			{ key: 'explore' as const, hasResults: hasExploreResults || isSearching },
 		];
 		return sections.sort((a, b) => Number(b.hasResults) - Number(a.hasResults));
 	}, [hasLibraryResults, hasDownloadsResults, hasExploreResults, isSearching]);
@@ -236,20 +249,23 @@ export default function SearchScreen() {
 				<View
 					style={[
 						styles.searchInputWrapper,
-						{ backgroundColor: SpotifyColors.surfaceElevated },
+						{ backgroundColor: isDark ? '#242424' : '#F0F0F2' },
 					]}
 				>
 					<Icon
 						as={SearchIcon}
 						size={20}
-						color={SpotifyColors.textSecondary}
+						color={isDark ? SpotifyColors.textSecondary : '#757575'}
 						style={styles.searchIcon}
 					/>
 					<TextInput
 						value={query}
 						onChangeText={search}
-						style={[styles.searchInput, { color: SpotifyColors.textPrimary }]}
-						placeholderTextColor={SpotifyColors.textSecondary}
+						style={[
+							styles.searchInput,
+							{ color: isDark ? SpotifyColors.textPrimary : '#121212' },
+						]}
+						placeholderTextColor={isDark ? SpotifyColors.textSecondary : '#757575'}
 						placeholder={'What do you want to listen to?'}
 						autoCapitalize={'none'}
 						autoCorrect={false}
@@ -258,10 +274,50 @@ export default function SearchScreen() {
 					/>
 					{query.length > 0 && (
 						<Pressable onPress={clearSearch} hitSlop={8} style={styles.clearButton}>
-							<Icon as={XIcon} size={18} color={SpotifyColors.textSecondary} />
+							<Icon
+								as={XIcon}
+								size={18}
+								color={isDark ? SpotifyColors.textSecondary : '#757575'}
+							/>
 						</Pressable>
 					)}
 				</View>
+
+				{!hasQuery && (
+					<ScrollView
+						horizontal
+						showsHorizontalScrollIndicator={false}
+						contentContainerStyle={styles.suggestionsContainer}
+						style={styles.suggestionsScroll}
+					>
+						{DEFAULT_SEARCH_SUGGESTIONS.map((suggestion) => (
+							<Pressable
+								key={suggestion}
+								onPress={() => {
+									search(suggestion);
+									useSearchStore.getState().addRecentSearch(suggestion);
+								}}
+								style={({ pressed }) => [
+									styles.suggestionPill,
+									{
+										backgroundColor: isDark ? '#242424' : '#F2F2F4',
+										borderColor: isDark ? '#333333' : '#E0E0E0',
+									},
+									pressed && styles.suggestionPillPressed,
+								]}
+							>
+								<Text
+									style={[
+										styles.suggestionPillText,
+										{ color: isDark ? '#FFFFFF' : '#121212' },
+									]}
+								>
+									{suggestion}
+								</Text>
+							</Pressable>
+						))}
+					</ScrollView>
+				)}
 			</View>
 
 			{showLoading && (
@@ -473,17 +529,17 @@ export default function SearchScreen() {
 											</View>
 										</ResultGroup>
 									);
-								case 'plugins':
+								case 'explore':
 									return (
 										<ResultGroup
 											key={key}
-											title={'Plugins'}
-											icon={PlugIcon}
+											title={'Online Results'}
+											icon={GlobeIcon}
 											isEmpty={!hasExploreResults && !isSearching}
 											emptyState={
 												<EmptyState
 													icon={SearchXIcon}
-													title={'No plugin results'}
+													title={'No online results'}
 													description={'Try a different search term'}
 												/>
 											}
@@ -653,5 +709,30 @@ const styles = StyleSheet.create({
 	showAllButton: {
 		paddingVertical: 8,
 		alignItems: 'center',
+	},
+	suggestionsWrapper: {
+		marginTop: 12,
+		marginBottom: 4,
+	},
+	suggestionsScroll: {
+		overflow: 'visible',
+	},
+	suggestionsContainer: {
+		gap: 8,
+		paddingRight: 16,
+	},
+	suggestionPill: {
+		paddingHorizontal: 16,
+		paddingVertical: 7,
+		borderRadius: 20,
+		borderWidth: 1,
+	},
+	suggestionPillPressed: {
+		opacity: 0.7,
+		transform: [{ scale: 0.96 }],
+	},
+	suggestionPillText: {
+		fontSize: 13,
+		fontWeight: '700',
 	},
 });

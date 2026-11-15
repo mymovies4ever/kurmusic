@@ -61,7 +61,7 @@ export function DetailsHeader({
 					/>
 					<BlurView
 						intensity={BLUR_INTENSITY}
-						experimentalBlurMethod={'dimezisBlurView'}
+						experimentalBlurMethod={'none'}
 						style={StyleSheet.absoluteFill}
 						tint={'dark'}
 					/>

@@ -8,7 +8,6 @@
 import { View, Pressable, StyleSheet, PanResponder } from 'react-native';
 import { router, usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BlurView } from 'expo-blur';
 import Animated, {
 	useAnimatedStyle,
 	withTiming,
@@ -146,8 +145,8 @@ export function FloatingPlayer() {
 		return <View style={styles.hidden} />;
 	}
 
-	const glassBgColor = isDark ? 'rgba(16, 16, 22, 0.65)' : 'rgba(255, 255, 255, 0.82)';
-	const glassBorderColor = isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.08)';
+	const cardBgColor = isDark ? '#242424' : '#FFFFFF';
+	const cardBorderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
 
 	return (
 		<Animated.View
@@ -156,19 +155,14 @@ export function FloatingPlayer() {
 				styles.container,
 				{
 					bottom: bottomOffset,
-					borderColor: glassBorderColor,
+					backgroundColor: cardBgColor,
+					borderColor: cardBorderColor,
 				},
 				animatedStyle,
 			]}
 			pointerEvents={shouldShow ? 'auto' : 'none'}
 			{...swipeResponder.panHandlers}
 		>
-			<BlurView
-				intensity={85}
-				tint={isDark ? 'dark' : 'light'}
-				experimentalBlurMethod={'dimezisBlurView'}
-				style={[StyleSheet.absoluteFill, { backgroundColor: glassBgColor }]}
-			/>
 			<Pressable onPress={handlePress} style={styles.pressable}>
 				<View style={styles.progressContainer}>
 					<FloatingProgressBar />

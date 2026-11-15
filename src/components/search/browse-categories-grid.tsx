@@ -10,19 +10,27 @@ export interface BrowseCategory {
 	readonly query: string;
 }
 
-export const SPOTIFY_BROWSE_CATEGORIES: BrowseCategory[] = [
-	{ id: 'bollywood', title: 'Bollywood', color: '#E8115B', query: 'Bollywood Hits' },
-	{ id: 'pop', title: 'Pop', color: '#148A08', query: 'Pop Hits' },
-	{ id: 'malayalam', title: 'Malayalam', color: '#27856A', query: 'Malayalam' },
+export const LANGUAGE_CATEGORIES: BrowseCategory[] = [
+	{ id: 'malayalam', title: 'Malayalam', color: '#27856A', query: 'Malayalam Hits' },
 	{ id: 'tamil', title: 'Tamil', color: '#1E3264', query: 'Tamil Hits' },
-	{ id: 'punjabi', title: 'Punjabi', color: '#BC5900', query: 'Punjabi' },
-	{ id: 'hip-hop', title: 'Hip-Hop', color: '#BA5D07', query: 'Hip Hop' },
-	{ id: 'chill', title: 'Chill & Relax', color: '#8D67AB', query: 'Chill Lo-Fi' },
+	{ id: 'bollywood', title: 'Bollywood / Hindi', color: '#E8115B', query: 'Bollywood Hits' },
+	{ id: 'punjabi', title: 'Punjabi', color: '#BC5900', query: 'Punjabi Hits' },
+	{ id: 'telugu', title: 'Telugu', color: '#BA5D07', query: 'Telugu Hits' },
+	{ id: 'english', title: 'English / Pop', color: '#148A08', query: 'Pop Global Hits' },
+];
+
+export const MOOD_CATEGORIES: BrowseCategory[] = [
+	{ id: 'romance', title: 'Romance & Love', color: '#8C1932', query: 'Romantic' },
+	{ id: 'chill', title: 'Chill & Lo-Fi', color: '#8D67AB', query: 'Chill Lo-Fi' },
+	{ id: 'party', title: 'Party & Dance', color: '#D84000', query: 'Party Dance' },
+	{ id: 'workout', title: 'Workout & Energy', color: '#503750', query: 'Workout Motivation' },
+	{ id: 'indie', title: 'Indie India', color: '#7358FF', query: 'Indie India' },
 	{ id: 'rock', title: 'Rock & Metal', color: '#E91429', query: 'Rock' },
-	{ id: 'party', title: 'Party & Dance', color: '#D84000', query: 'Party Hits' },
-	{ id: 'indie', title: 'Indie India', color: '#7358FF', query: 'Indie' },
-	{ id: 'workout', title: 'Workout', color: '#503750', query: 'Workout' },
-	{ id: 'romance', title: 'Romance', color: '#8C1932', query: 'Romantic' },
+];
+
+export const SPOTIFY_BROWSE_CATEGORIES: BrowseCategory[] = [
+	...LANGUAGE_CATEGORIES,
+	...MOOD_CATEGORIES,
 ];
 
 interface BrowseCategoriesGridProps {
@@ -34,9 +42,29 @@ export const BrowseCategoriesGrid = memo(function BrowseCategoriesGrid({
 }: BrowseCategoriesGridProps) {
 	return (
 		<View style={styles.container}>
-			<Text style={styles.sectionHeader}>Browse all</Text>
+			<Text style={styles.sectionHeader}>Explore by Language</Text>
 			<View style={styles.grid}>
-				{SPOTIFY_BROWSE_CATEGORIES.map((cat) => (
+				{LANGUAGE_CATEGORIES.map((cat) => (
+					<Pressable
+						key={cat.id}
+						onPress={() => onSelectCategory(cat.query)}
+						style={({ pressed }) => [
+							styles.card,
+							{ backgroundColor: cat.color },
+							pressed && styles.pressed,
+						]}
+					>
+						<Text style={styles.cardTitle}>{cat.title}</Text>
+						<View style={styles.cardIconWrapper}>
+							<Disc size={42} color={'rgba(255, 255, 255, 0.45)'} />
+						</View>
+					</Pressable>
+				))}
+			</View>
+
+			<Text style={[styles.sectionHeader, { marginTop: 24 }]}>Moods & Genres</Text>
+			<View style={styles.grid}>
+				{MOOD_CATEGORIES.map((cat) => (
 					<Pressable
 						key={cat.id}
 						onPress={() => onSelectCategory(cat.query)}

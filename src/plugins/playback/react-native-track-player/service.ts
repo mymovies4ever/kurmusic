@@ -7,11 +7,13 @@ import { usePlayerStore } from '@/src/application/state/player-store';
 import { useLibraryStore } from '@/src/application/state/library-store';
 import { useHistoryStore } from '@/src/application/state/history-store';
 import { useDownloadStore } from '@/src/application/state/download-store';
-import { createTrackFromDownloadInfo } from '@/src/domain/utils/create-track-from-download';
+import {
+	createTrackFromDownloadInfo,
+	createTrackFromDownloadedMetadata,
+} from '@/src/domain/utils/create-track-from-download';
 import { playbackService } from '@/src/application/services/playback-service';
 import type { Track } from '@/src/domain/entities/track';
 import { getTrackIdString } from '@/src/domain/value-objects/track-id';
-import { getAlbumIdString } from '@/src/domain/value-objects/album-id';
 
 const logger = getLogger('RNTPPlaybackService');
 const MIN_SEEK_POSITION = 0;
@@ -19,6 +21,14 @@ const ANDROID_AUTO_TRACK_ID_PREFIX = 'android_auto_track:';
 const ANDROID_AUTO_BROWSE_TRACK_ID_PREFIX = 'android_auto_browse_track:';
 const ANDROID_AUTO_NATIVE_TRACK_ID_PREFIX = 'android_auto_native_track:';
 const ANDROID_AUTO_REMOTE_SKIP_SETTLE_MS = 120;
+
+// Deterministic URI prefixes for robust Android Auto playback
+const AA_DOWNLOAD_PREFIX = 'aa:dl:';
+const AA_FAVORITE_PREFIX = 'aa:fav:';
+const AA_PLAYLIST_PREFIX = 'aa:pl:';
+const AA_RECENT_PREFIX = 'aa:rec:';
+const AA_FEED_PREFIX = 'aa:feed:';
+const AA_QUEUE_PREFIX = 'aa:q:';
 
 interface AndroidAutoBrowseItem {
 	readonly id: string;
@@ -69,6 +79,45 @@ function getTrackArtwork(track: Track): string {
 	return track.artwork?.[0]?.url || '';
 }
 
+function getDownloadedTracksList(): Track[] {
+	const downloadStore = useDownloadStore.getState();
+	const completed = Array.from(downloadStore.downloads.values()).filter(
+		(info) => info.status === 'completed'
+	);
+	if (completed.length > 0) {
+		return completed.map(createTrackFromDownloadInfo);
+	}
+	const metaList = downloadStore.getAllDownloadedTracks();
+	return metaList.map(createTrackFromDownloadedMetadata);
+}
+
+function getFeedTracksList(): Track[] {
+	const { sections } = useHomeFeedStore.getState();
+	const tracks: Track[] = [];
+	for (const section of sections) {
+		for (const item of section.items) {
+			if (item.type === 'track') {
+				tracks.push(item.data);
+			}
+		}
+	}
+	if (tracks.length > 0) {
+		return tracks.slice(0, 50);
+	}
+	// Fallback when online feed is not yet hydrated or offline:
+	// Liked songs -> Downloads -> Recent
+	const favorites = useLibraryStore.getState().getFavoriteTracks();
+	if (favorites.length > 0) return favorites.slice(0, 50);
+
+	const downloads = getDownloadedTracksList();
+	if (downloads.length > 0) return downloads.slice(0, 50);
+
+	const recents = useHistoryStore.getState().getRecentTracks(50);
+	if (recents.length > 0) return recents;
+
+	return [];
+}
+
 function cacheAndroidAutoTrackContext(
 	contextId: string,
 	tracks: Track[],
@@ -114,6 +163,162 @@ function getTrackIdFromAndroidAutoMediaId(mediaId: string): string {
 	} catch {
 		return mediaId;
 	}
+}
+
+async function resolveAndroidAutoTrackContext(
+	mediaId: string
+): Promise<{ tracks: Track[]; index: number } | null> {
+	// 1. Try fast in-memory cache first
+	const cached = browsePlayContextCache.get(mediaId);
+	if (
+		cached &&
+		cached.tracks.length > 0 &&
+		cached.index >= 0 &&
+		cached.index < cached.tracks.length
+	) {
+		return cached;
+	}
+
+	// 2. Parse deterministic URI schemas
+	if (mediaId.startsWith(AA_DOWNLOAD_PREFIX)) {
+		const rawTrackId = decodeURIComponent(mediaId.slice(AA_DOWNLOAD_PREFIX.length));
+		const downloadedTracks = getDownloadedTracksList();
+		const index = downloadedTracks.findIndex(
+			(t) => getTrackIdString(t.id) === rawTrackId || t.id.value === rawTrackId
+		);
+		if (downloadedTracks.length > 0) {
+			return {
+				tracks: downloadedTracks,
+				index: index >= 0 ? index : 0,
+			};
+		}
+	}
+
+	if (mediaId.startsWith(AA_FAVORITE_PREFIX)) {
+		const parts = mediaId.slice(AA_FAVORITE_PREFIX.length).split(':');
+		const targetIndex = Number.parseInt(parts[0], 10);
+		const rawTrackId = parts[1] ? decodeURIComponent(parts[1]) : '';
+		const favorites = useLibraryStore.getState().getFavoriteTracks();
+		if (favorites.length > 0) {
+			let index =
+				Number.isInteger(targetIndex) && targetIndex >= 0 && targetIndex < favorites.length
+					? targetIndex
+					: -1;
+			if (index === -1 && rawTrackId) {
+				index = favorites.findIndex(
+					(t) => getTrackIdString(t.id) === rawTrackId || t.id.value === rawTrackId
+				);
+			}
+			return {
+				tracks: favorites,
+				index: Math.max(0, index),
+			};
+		}
+	}
+
+	if (mediaId.startsWith(AA_RECENT_PREFIX)) {
+		const parts = mediaId.slice(AA_RECENT_PREFIX.length).split(':');
+		const targetIndex = Number.parseInt(parts[0], 10);
+		const rawTrackId = parts[1] ? decodeURIComponent(parts[1]) : '';
+		const recents = useHistoryStore.getState().getRecentTracks(50);
+		if (recents.length > 0) {
+			let index =
+				Number.isInteger(targetIndex) && targetIndex >= 0 && targetIndex < recents.length
+					? targetIndex
+					: -1;
+			if (index === -1 && rawTrackId) {
+				index = recents.findIndex(
+					(t) => getTrackIdString(t.id) === rawTrackId || t.id.value === rawTrackId
+				);
+			}
+			return {
+				tracks: recents,
+				index: Math.max(0, index),
+			};
+		}
+	}
+
+	if (mediaId.startsWith(AA_PLAYLIST_PREFIX)) {
+		const parts = mediaId.slice(AA_PLAYLIST_PREFIX.length).split(':');
+		const playlistId = decodeURIComponent(parts[0] || '');
+		const targetIndex = Number.parseInt(parts[1], 10);
+		const rawTrackId = parts[2] ? decodeURIComponent(parts[2]) : '';
+		const playlist = useLibraryStore.getState().playlists.find((p) => p.id === playlistId);
+		if (playlist && playlist.tracks.length > 0) {
+			const tracks = playlist.tracks.map((pt) => pt.track);
+			let index =
+				Number.isInteger(targetIndex) && targetIndex >= 0 && targetIndex < tracks.length
+					? targetIndex
+					: -1;
+			if (index === -1 && rawTrackId) {
+				index = tracks.findIndex(
+					(t) => getTrackIdString(t.id) === rawTrackId || t.id.value === rawTrackId
+				);
+			}
+			return {
+				tracks,
+				index: Math.max(0, index),
+			};
+		}
+	}
+
+	if (mediaId.startsWith(AA_FEED_PREFIX)) {
+		const parts = mediaId.slice(AA_FEED_PREFIX.length).split(':');
+		const targetIndex = Number.parseInt(parts[0], 10);
+		const rawTrackId = parts[1] ? decodeURIComponent(parts[1]) : '';
+		const feedTracks = getFeedTracksList();
+		if (feedTracks.length > 0) {
+			let index =
+				Number.isInteger(targetIndex) && targetIndex >= 0 && targetIndex < feedTracks.length
+					? targetIndex
+					: -1;
+			if (index === -1 && rawTrackId) {
+				index = feedTracks.findIndex(
+					(t) => getTrackIdString(t.id) === rawTrackId || t.id.value === rawTrackId
+				);
+			}
+			return {
+				tracks: feedTracks,
+				index: Math.max(0, index),
+			};
+		}
+	}
+
+	if (mediaId.startsWith(AA_QUEUE_PREFIX) || mediaId.startsWith(ANDROID_AUTO_TRACK_ID_PREFIX)) {
+		const prefix = mediaId.startsWith(AA_QUEUE_PREFIX)
+			? AA_QUEUE_PREFIX
+			: ANDROID_AUTO_TRACK_ID_PREFIX;
+		const index = Number.parseInt(mediaId.slice(prefix.length), 10);
+		const queue = usePlayerStore.getState().queue;
+		if (queue.length > 0) {
+			return {
+				tracks: queue,
+				index: Number.isInteger(index) && index >= 0 && index < queue.length ? index : 0,
+			};
+		}
+	}
+
+	// Legacy format compatibility: android_auto_browse_track:<contextId>:<index>:<trackId>
+	if (mediaId.startsWith(ANDROID_AUTO_BROWSE_TRACK_ID_PREFIX)) {
+		const trackId = getTrackIdFromAndroidAutoMediaId(mediaId);
+		const cachedTrack = browseTrackCache.get(trackId);
+		if (cachedTrack) {
+			return { tracks: [cachedTrack], index: 0 };
+		}
+		const appQueue = usePlayerStore.getState().queue;
+		const qIndex = appQueue.findIndex((t) => getTrackIdString(t.id) === trackId);
+		if (qIndex >= 0) {
+			return { tracks: appQueue, index: qIndex };
+		}
+		const libraryTrack = useLibraryStore
+			.getState()
+			.tracks.find((t) => getTrackIdString(t.id) === trackId);
+		if (libraryTrack) {
+			return { tracks: [libraryTrack], index: 0 };
+		}
+	}
+
+	return null;
 }
 
 async function getNativeActiveQueueIndex(): Promise<number | null> {
@@ -222,6 +427,39 @@ export async function PlaybackService(): Promise<void> {
 			if (event.parentId === 'root') {
 				items = [
 					{
+						id: 'library_downloads',
+						title: 'Downloaded Music',
+						subtitle: 'Offline tracks on this device',
+						playable: false,
+						browsable: true,
+						gridBrowsable: true,
+						gridPlayable: true,
+					},
+					{
+						id: 'library_tracks',
+						title: 'Liked Songs',
+						subtitle: 'Your favorite music',
+						playable: false,
+						browsable: true,
+						gridBrowsable: true,
+						gridPlayable: true,
+					},
+					{
+						id: 'library_recent',
+						title: 'Recently Played',
+						subtitle: 'Recently listened tracks',
+						playable: false,
+						browsable: true,
+						gridPlayable: true,
+					},
+					{
+						id: 'library_playlists',
+						title: 'Playlists',
+						subtitle: 'Your custom playlists',
+						playable: false,
+						browsable: true,
+					},
+					{
 						id: 'feed',
 						title: 'Home Suggestions',
 						subtitle: 'Personalized for you',
@@ -229,13 +467,6 @@ export async function PlaybackService(): Promise<void> {
 						browsable: true,
 						gridBrowsable: true,
 						gridPlayable: true,
-					},
-					{
-						id: 'library',
-						title: 'Your Library',
-						subtitle: 'Playlists and Favorites',
-						playable: false,
-						browsable: true,
 					},
 					{
 						id: 'queue',
@@ -246,60 +477,21 @@ export async function PlaybackService(): Promise<void> {
 					},
 				];
 			} else if (event.parentId === 'feed') {
-				const { sections } = useHomeFeedStore.getState();
-				const feedTracks: Track[] = [];
-				items = sections
-					.flatMap((section) =>
-						section.items.flatMap((item): AndroidAutoBrowseItem[] => {
-							if (item.type === 'track') {
-								feedTracks.push(item.data);
-								const trackIndex = feedTracks.length - 1;
-								return [
-									{
-										id: cacheAndroidAutoTrackContext(
-											'feed',
-											feedTracks,
-											trackIndex
-										),
-										title: item.data.title,
-										subtitle: getArtistNames(item.data),
-										playable: true,
-										browsable: false,
-										iconUri: getTrackArtwork(item.data),
-									},
-								];
-							}
-							if (item.type === 'album') {
-								return [
-									{
-										id: `album_tracks:${getAlbumIdString(item.data.id)}`,
-										title: item.data.name,
-										subtitle:
-											item.data.artists
-												.map((artist) => artist.name)
-												.join(', ') || 'Album',
-										playable: false,
-										browsable: true,
-										iconUri: item.data.artwork?.[0]?.url || '',
-									},
-								];
-							}
-							if (item.type === 'playlist') {
-								return [
-									{
-										id: `playlist_tracks:${item.data.id}`,
-										title: item.data.name,
-										subtitle: 'Playlist',
-										playable: false,
-										browsable: true,
-										iconUri: item.data.artwork?.[0]?.url || '',
-									},
-								];
-							}
-							return [];
-						})
-					)
-					.slice(0, 30);
+				const feedTracks = getFeedTracksList();
+				items = feedTracks.map((track, trackIndex) => {
+					const trackId = getTrackIdString(track.id);
+					const mediaId = `${AA_FEED_PREFIX}${trackIndex}:${encodeURIComponent(trackId)}`;
+					browseTrackCache.set(trackId, track);
+					browsePlayContextCache.set(mediaId, { tracks: feedTracks, index: trackIndex });
+					return {
+						id: mediaId,
+						title: track.title,
+						subtitle: getArtistNames(track),
+						playable: true,
+						browsable: false,
+						iconUri: getTrackArtwork(track),
+					};
+				});
 
 				if (items.length === 0) {
 					items.push({
@@ -312,6 +504,14 @@ export async function PlaybackService(): Promise<void> {
 				}
 			} else if (event.parentId === 'library') {
 				items = [
+					{
+						id: 'library_downloads',
+						title: 'Downloaded Music',
+						subtitle: 'Offline tracks on this device',
+						playable: false,
+						browsable: true,
+						gridPlayable: true,
+					},
 					{
 						id: 'library_tracks',
 						title: 'Favorite Songs',
@@ -335,18 +535,23 @@ export async function PlaybackService(): Promise<void> {
 						browsable: true,
 						gridPlayable: true,
 					},
-					{
-						id: 'library_downloads',
-						title: 'Downloads',
-						subtitle: 'Offline tracks on this device',
-						playable: false,
-						browsable: true,
-						gridPlayable: true,
-					},
 				];
 			} else if (event.parentId === 'library_recent') {
-				const recentTracks = useHistoryStore.getState().getRecentTracks(30);
-				items = createTrackBrowseItems('library_recent', recentTracks);
+				const recentTracks = useHistoryStore.getState().getRecentTracks(50);
+				items = recentTracks.map((track, index) => {
+					const trackId = getTrackIdString(track.id);
+					const mediaId = `${AA_RECENT_PREFIX}${index}:${encodeURIComponent(trackId)}`;
+					browseTrackCache.set(trackId, track);
+					browsePlayContextCache.set(mediaId, { tracks: recentTracks, index });
+					return {
+						id: mediaId,
+						title: track.title,
+						subtitle: getArtistNames(track),
+						playable: true,
+						browsable: false,
+						iconUri: getTrackArtwork(track),
+					};
+				});
 
 				if (items.length === 0) {
 					items.push({
@@ -358,13 +563,21 @@ export async function PlaybackService(): Promise<void> {
 					});
 				}
 			} else if (event.parentId === 'library_downloads') {
-				const completedDownloads = Array.from(
-					useDownloadStore.getState().downloads.values()
-				).filter((info) => info.status === 'completed');
-				const downloadedTracks = completedDownloads.map((downloadInfo) =>
-					createTrackFromDownloadInfo(downloadInfo)
-				);
-				items = createTrackBrowseItems('library_downloads', downloadedTracks);
+				const downloadedTracks = getDownloadedTracksList();
+				items = downloadedTracks.map((track, index) => {
+					const trackId = getTrackIdString(track.id);
+					const mediaId = `${AA_DOWNLOAD_PREFIX}${encodeURIComponent(trackId)}`;
+					browseTrackCache.set(trackId, track);
+					browsePlayContextCache.set(mediaId, { tracks: downloadedTracks, index });
+					return {
+						id: mediaId,
+						title: track.title,
+						subtitle: getArtistNames(track),
+						playable: true,
+						browsable: false,
+						iconUri: getTrackArtwork(track),
+					};
+				});
 
 				if (items.length === 0) {
 					items.push({
@@ -377,7 +590,20 @@ export async function PlaybackService(): Promise<void> {
 				}
 			} else if (event.parentId === 'library_tracks') {
 				const favorites = useLibraryStore.getState().getFavoriteTracks();
-				items = createTrackBrowseItems('library_tracks', favorites);
+				items = favorites.map((track, index) => {
+					const trackId = getTrackIdString(track.id);
+					const mediaId = `${AA_FAVORITE_PREFIX}${index}:${encodeURIComponent(trackId)}`;
+					browseTrackCache.set(trackId, track);
+					browsePlayContextCache.set(mediaId, { tracks: favorites, index });
+					return {
+						id: mediaId,
+						title: track.title,
+						subtitle: getArtistNames(track),
+						playable: true,
+						browsable: false,
+						iconUri: getTrackArtwork(track),
+					};
+				});
 
 				if (items.length === 0) {
 					items.push({
@@ -416,11 +642,22 @@ export async function PlaybackService(): Promise<void> {
 				const playlist = useLibraryStore
 					.getState()
 					.playlists.find((p) => p.id === playlistId);
-				if (playlist) {
-					items = createTrackBrowseItems(
-						`playlist_tracks:${playlistId}`,
-						playlist.tracks.map((pt) => pt.track)
-					);
+				if (playlist && playlist.tracks.length > 0) {
+					const playlistTracks = playlist.tracks.map((pt) => pt.track);
+					items = playlistTracks.map((track, index) => {
+						const trackId = getTrackIdString(track.id);
+						const mediaId = `${AA_PLAYLIST_PREFIX}${encodeURIComponent(playlistId)}:${index}:${encodeURIComponent(trackId)}`;
+						browseTrackCache.set(trackId, track);
+						browsePlayContextCache.set(mediaId, { tracks: playlistTracks, index });
+						return {
+							id: mediaId,
+							title: track.title,
+							subtitle: getArtistNames(track),
+							playable: true,
+							browsable: false,
+							iconUri: getTrackArtwork(track),
+						};
+					});
 				}
 
 				if (items.length === 0) {
@@ -456,14 +693,16 @@ export async function PlaybackService(): Promise<void> {
 				const appQueue = usePlayerStore.getState().queue;
 				const currentIndex = usePlayerStore.getState().queueIndex;
 				items = appQueue.map((track, i) => {
-					browseTrackCache.set(getTrackIdString(track.id), track);
-					browsePlayContextCache.set(`${ANDROID_AUTO_TRACK_ID_PREFIX}${i}`, {
+					const trackId = getTrackIdString(track.id);
+					const mediaId = `${AA_QUEUE_PREFIX}${i}`;
+					browseTrackCache.set(trackId, track);
+					browsePlayContextCache.set(mediaId, {
 						tracks: appQueue,
 						index: i,
 					});
 					const isCurrent = i === currentIndex;
 					return {
-						id: `${ANDROID_AUTO_TRACK_ID_PREFIX}${i}`,
+						id: mediaId,
 						title: track.title,
 						subtitle: `${isCurrent ? 'Now playing - ' : ''}${getArtistNames(track)}`,
 						playable: true,
@@ -520,59 +759,41 @@ export async function PlaybackService(): Promise<void> {
 				return;
 			}
 
-			const store = usePlayerStore.getState();
-			const appQueue = store.queue;
-			const playContext = browsePlayContextCache.get(event.mediaId);
-
-			if (playContext) {
-				const trackToPlay = playContext.tracks[playContext.index];
+			// If it's a native track ID that was already handled by MusicService.kt native player
+			if (event.mediaId.startsWith(ANDROID_AUTO_NATIVE_TRACK_ID_PREFIX)) {
 				logger.debug(
-					`Playing Android Auto browse context at index ${playContext.index} (${playContext.tracks.length} tracks): ${trackToPlay?.title}`
+					'Native Android Auto track id received; native session handled playback'
 				);
-				playbackService.setQueue(playContext.tracks, playContext.index);
-				if (trackToPlay) {
-					useHistoryStore.getState().addToHistory(trackToPlay);
-					await playbackService.play(trackToPlay);
-				}
 				return;
 			}
 
-			let index = -1;
-			if (event.mediaId.startsWith(ANDROID_AUTO_TRACK_ID_PREFIX)) {
-				index = Number.parseInt(
-					event.mediaId.slice(ANDROID_AUTO_TRACK_ID_PREFIX.length),
-					10
-				);
-			} else if (event.mediaId.startsWith(ANDROID_AUTO_NATIVE_TRACK_ID_PREFIX)) {
+			const resolved = await resolveAndroidAutoTrackContext(event.mediaId);
+			if (resolved && resolved.tracks.length > 0) {
+				const trackToPlay = resolved.tracks[resolved.index];
 				logger.debug(
-					'Native Android Auto track id received after native fallback; waiting for native session alignment'
+					`Playing Android Auto browse context at index ${resolved.index} (${resolved.tracks.length} tracks): ${trackToPlay?.title}`
 				);
-				return;
-			} else {
-				const trackId = getTrackIdFromAndroidAutoMediaId(event.mediaId);
-				index = appQueue.findIndex((t) => getTrackIdString(t.id) === trackId);
-			}
-
-			if (index >= 0 && index < appQueue.length) {
-				const trackToPlay = appQueue[index];
-				logger.debug(`Playing from queue at index ${index}: ${trackToPlay?.title}`);
-				playbackService.setQueue(appQueue, index);
 				if (trackToPlay) {
 					useHistoryStore.getState().addToHistory(trackToPlay);
-					await playbackService.play(trackToPlay);
 				}
-			} else {
-				// Not in active queue, check cache
-				const track = browseTrackCache.get(getTrackIdFromAndroidAutoMediaId(event.mediaId));
-				if (track) {
-					logger.debug(`Playing cached track: ${track.title}`);
-					playbackService.setQueue([track], 0);
-					useHistoryStore.getState().addToHistory(track);
-					await playbackService.play(track);
-				} else {
-					logger.warn(`Track not found in queue or cache: ${event.mediaId}`);
-				}
+				// playbackService.setQueue atomically sets queue and starts playing track at resolved.index
+				playbackService.setQueue(resolved.tracks, resolved.index);
+				return;
 			}
+
+			// Fallback: check if the mediaId matches any track in the current player queue
+			const appQueue = usePlayerStore.getState().queue;
+			const trackId = getTrackIdFromAndroidAutoMediaId(event.mediaId);
+			const queueIndex = appQueue.findIndex((t) => getTrackIdString(t.id) === trackId);
+			if (queueIndex >= 0) {
+				logger.debug(
+					`Playing from queue at index ${queueIndex}: ${appQueue[queueIndex]?.title}`
+				);
+				playbackService.setQueue(appQueue, queueIndex);
+				return;
+			}
+
+			logger.warn(`Track could not be resolved for mediaId: ${event.mediaId}`);
 		} catch (err) {
 			logger.error(
 				'Error playing track in remote-play-id',

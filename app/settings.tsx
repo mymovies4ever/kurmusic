@@ -22,7 +22,6 @@ import { Image } from 'expo-image';
 import {
 	TrashIcon,
 	InfoIcon,
-	PlugIcon,
 	HardDriveIcon,
 	LayoutGridIcon,
 	SlidersHorizontalIcon,
@@ -38,14 +37,19 @@ import {
 	UserIcon,
 	ShieldCheckIcon,
 	CpuIcon,
+	SunMoonIcon,
+	FolderUpIcon,
+	FolderDownIcon,
 	type LucideIcon,
 } from 'lucide-react-native';
 import {
+	THEME_OPTIONS,
 	DEFAULT_TAB_OPTIONS,
 	UI_STYLE_OPTIONS,
 	STREAM_QUALITY_OPTIONS,
 	HOME_CONTENT_PREFERENCE_OPTIONS,
 } from '@/lib/settings-config';
+import { exportBackupAsync, importBackupAsync } from '@/src/application/services/backup-service';
 import { useLibraryStore } from '@application/state/library-store';
 import { useLibraryFilterStore } from '@application/state/library-filter-store';
 import { useEqualizerStore } from '@application/state/equalizer-store';
@@ -76,6 +80,8 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 	const playlistsCount = useLibraryStore((state) => state.playlists.length);
 	const favoritesCount = useLibraryStore((state) => state.favorites.size);
 	const {
+		themePreference,
+		setThemePreference,
 		defaultTab,
 		setDefaultTab,
 		accentColor,
@@ -100,6 +106,8 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 		resetDownloadLocation,
 	} = useSettingsStore(
 		useShallow((state) => ({
+			themePreference: state.themePreference,
+			setThemePreference: state.setThemePreference,
 			defaultTab: state.defaultTab,
 			setDefaultTab: state.setDefaultTab,
 			accentColor: state.accentColor,
@@ -153,7 +161,46 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 		),
 		[autoplaySimilarOnQueueEnd, setAutoplaySimilarOnQueueEnd]
 	);
-	const { success } = useToast();
+	const { success, error: toastError } = useToast();
+	const [isExporting, setIsExporting] = useState(false);
+	const [isImporting, setIsImporting] = useState(false);
+
+	const handleExportBackup = useCallback(async () => {
+		if (isExporting) return;
+		setIsExporting(true);
+		try {
+			const res = await exportBackupAsync();
+			if (res.success) {
+				success(res.message, res.details ?? 'All settings & download records saved');
+			} else {
+				if (res.message !== 'Export cancelled: storage permission not granted') {
+					toastError(res.message, res.details);
+				}
+			}
+		} finally {
+			setIsExporting(false);
+		}
+	}, [isExporting, success, toastError]);
+
+	const handleImportBackup = useCallback(async () => {
+		if (isImporting) return;
+		setIsImporting(true);
+		try {
+			const res = await importBackupAsync();
+			if (res.success) {
+				success(
+					res.message,
+					res.importedCount
+						? `Restored ${res.importedCount.tracks} tracks, ${res.importedCount.playlists} playlists, ${res.importedCount.downloads} downloads.`
+						: undefined
+				);
+			} else if (res.message !== 'Import cancelled') {
+				toastError('Failed to import backup', res.message);
+			}
+		} finally {
+			setIsImporting(false);
+		}
+	}, [isImporting, success, toastError]);
 	const [equalizerSheetOpen, setEqualizerSheetOpen] = useState(false);
 	const [clearLibraryDialogVisible, setClearLibraryDialogVisible] = useState(false);
 	const [clearDownloadsDialogVisible, setClearDownloadsDialogVisible] = useState(false);
@@ -472,17 +519,15 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 					</View>
 				</Surface>
 
-				<SettingsSection title={'Plugins'}>
-					<SettingsItem
-						icon={PlugIcon}
-						title={'Manage plugins'}
-						subtitle={'Music sources, playback, and more'}
-						onPress={() => router.push('/plugins')}
-						showChevron
-					/>
-				</SettingsSection>
-
 				<SettingsSection title={'Appearance'}>
+					<SettingsSelect
+						icon={SunMoonIcon}
+						title={'Theme'}
+						options={THEME_OPTIONS}
+						value={themePreference}
+						onValueChange={setThemePreference}
+						portalName={'theme-select'}
+					/>
 					<AccentColorPicker value={accentColor} onValueChange={setAccentColor} />
 					<SettingsSelect
 						icon={LayoutGridIcon}
@@ -504,7 +549,7 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 					<SettingsItem
 						icon={TagIcon}
 						title={'Show provider label'}
-						subtitle={'Display the source plugin on tracks'}
+						subtitle={'Display music source badge on tracks'}
 						rightElement={providerLabelSwitch}
 						onPress={() => setShowProviderLabel(!showProviderLabel)}
 					/>
@@ -616,6 +661,25 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 						subtitle={'Remove all tracks and playlists'}
 						onPress={handleClearLibrary}
 						destructive
+					/>
+				</SettingsSection>
+
+				<SettingsSection title={'Backup & Restore'}>
+					<SettingsItem
+						icon={FolderUpIcon}
+						title={'Export backup'}
+						subtitle={
+							'Save settings, playlists, favorites, and download records to JSON'
+						}
+						onPress={handleExportBackup}
+						showChevron
+					/>
+					<SettingsItem
+						icon={FolderDownIcon}
+						title={'Import backup'}
+						subtitle={'Restore configuration and library from a JSON backup file'}
+						onPress={handleImportBackup}
+						showChevron
 					/>
 				</SettingsSection>
 

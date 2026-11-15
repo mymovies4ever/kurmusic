@@ -38,25 +38,25 @@ export const M3Colors = {
 		errorContainer: '#F9DEDC',
 		onErrorContainer: '#410E0B',
 
-		background: '#FFFBFE',
-		onBackground: '#1C1B1F',
+		background: '#FFFFFF',
+		onBackground: '#121212',
 
-		surface: '#FFFBFE',
-		onSurface: '#1C1B1F',
-		surfaceVariant: '#E7E0EC',
-		onSurfaceVariant: '#49454F',
+		surface: '#FFFFFF',
+		onSurface: '#121212',
+		surfaceVariant: '#F2F2F4',
+		onSurfaceVariant: '#666666',
 
-		outline: '#79747E',
-		outlineVariant: '#CAC4D0',
+		outline: '#DCDCDC',
+		outlineVariant: '#EAEAEA',
 
 		surfaceContainerLowest: '#FFFFFF',
-		surfaceContainerLow: '#F7F2FA',
-		surfaceContainer: '#F3EDF7',
-		surfaceContainerHigh: '#ECE6F0',
-		surfaceContainerHighest: '#E6E0E9',
+		surfaceContainerLow: '#F7F7F8',
+		surfaceContainer: '#F2F2F4',
+		surfaceContainerHigh: '#EAEAEB',
+		surfaceContainerHighest: '#E2E2E5',
 
-		inverseSurface: '#313033',
-		inverseOnSurface: '#F4EFF4',
+		inverseSurface: '#181818',
+		inverseOnSurface: '#FFFFFF',
 		inversePrimary: '#1D8CF8',
 
 		shadow: '#000000',
@@ -66,11 +66,11 @@ export const M3Colors = {
 
 		elevation: {
 			level0: 'transparent',
-			level1: '#F7F2FA',
-			level2: '#F3EDF7',
-			level3: '#EFE9F4',
-			level4: '#EDE7F2',
-			level5: '#EBE5F0',
+			level1: '#F7F7F8',
+			level2: '#F2F2F4',
+			level3: '#EAEAEB',
+			level4: '#E5E5E8',
+			level5: '#E0E0E4',
 		},
 	},
 
