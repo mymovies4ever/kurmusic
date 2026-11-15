@@ -1,4 +1,4 @@
-export { M3Colors, SEED_COLOR, GlassColors, type M3ColorScheme } from './colors';
+export { M3Colors, SEED_COLOR, GlassColors, SpotifyColors, type M3ColorScheme } from './colors';
 
 export {
 	M3Typography,

@@ -1,5 +1,6 @@
 import {
-	NewspaperIcon,
+	HomeIcon,
+	LibraryIcon,
 	MusicIcon,
 	SearchIcon,
 	DownloadIcon,
@@ -33,9 +34,9 @@ export const THEME_OPTIONS: { value: ThemePreference; label: string; icon: Lucid
 ];
 
 export const DEFAULT_TAB_OPTIONS: { value: DefaultTab; label: string; icon: LucideIcon }[] = [
-	{ value: 'feed', label: 'Home', icon: NewspaperIcon },
+	{ value: 'feed', label: 'Home', icon: HomeIcon },
 	{ value: 'search', label: 'Search', icon: SearchIcon },
-	{ value: 'library', label: 'Library', icon: MusicIcon },
+	{ value: 'library', label: 'Your Library', icon: LibraryIcon },
 	{ value: 'downloads', label: 'Downloads', icon: DownloadIcon },
 	{ value: 'settings', label: 'Settings', icon: SettingsIcon },
 ];

@@ -27,6 +27,7 @@ import {
 	LibraryResults,
 	ExploreResults,
 	RecentSearches,
+	BrowseCategoriesGrid,
 } from '@/src/components/search';
 import { useCuratedContent } from '@/src/hooks/use-curated-content';
 import { useUnifiedSearch } from '@/src/hooks/use-unified-search';
@@ -34,7 +35,7 @@ import { useSelection } from '@/src/hooks/use-selection';
 import { useBatchHandlers } from '@/src/hooks/use-batch-handlers';
 import { useSearchStore } from '@/src/application/state/search-store';
 import { Text } from 'react-native-paper';
-import { useAppTheme, FontFamily } from '@/lib/theme';
+import { useAppTheme, FontFamily, SpotifyColors } from '@/lib/theme';
 import type { Track } from '@/src/domain/entities/track';
 
 const BATCH_ACTION_BAR_PADDING = 120;
@@ -74,7 +75,6 @@ type ExpandedSectionKey =
 	| 'explore-artists';
 
 export default function SearchScreen() {
-	const { colors } = useAppTheme();
 	const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 	const [selectionSource, setSelectionSource] = useState<'library' | 'explore'>('library');
 	const [expandedSections, setExpandedSections] = useState<Set<ExpandedSectionKey>>(new Set());
@@ -236,21 +236,21 @@ export default function SearchScreen() {
 				<View
 					style={[
 						styles.searchInputWrapper,
-						{ backgroundColor: colors.surfaceContainerHigh },
+						{ backgroundColor: SpotifyColors.surfaceElevated },
 					]}
 				>
 					<Icon
 						as={SearchIcon}
 						size={20}
-						color={colors.onSurfaceVariant}
+						color={SpotifyColors.textSecondary}
 						style={styles.searchIcon}
 					/>
 					<TextInput
 						value={query}
 						onChangeText={search}
-						style={[styles.searchInput, { color: colors.onSurface }]}
-						placeholderTextColor={colors.onSurfaceVariant}
-						placeholder={'Search songs, artists, albums...'}
+						style={[styles.searchInput, { color: SpotifyColors.textPrimary }]}
+						placeholderTextColor={SpotifyColors.textSecondary}
+						placeholder={'What do you want to listen to?'}
 						autoCapitalize={'none'}
 						autoCorrect={false}
 						returnKeyType={'search'}
@@ -258,7 +258,7 @@ export default function SearchScreen() {
 					/>
 					{query.length > 0 && (
 						<Pressable onPress={clearSearch} hitSlop={8} style={styles.clearButton}>
-							<Icon as={XIcon} size={18} color={colors.onSurfaceVariant} />
+							<Icon as={XIcon} size={18} color={SpotifyColors.textSecondary} />
 						</Pressable>
 					)}
 				</View>
@@ -291,18 +291,6 @@ export default function SearchScreen() {
 							/>
 						)}
 
-						{!hasCuratedContent && !hasRecentSearches && (
-							<View style={styles.emptyContainer}>
-								<EmptyState
-									icon={SearchIcon}
-									title={'Search for music'}
-									description={
-										'Find songs, artists, and albums from your library and YouTube Music'
-									}
-								/>
-							</View>
-						)}
-
 						{hasCuratedContent && (
 							<>
 								<CuratedSection
@@ -320,6 +308,13 @@ export default function SearchScreen() {
 								/>
 							</>
 						)}
+
+						<BrowseCategoriesGrid
+							onSelectCategory={(categoryQuery) => {
+								search(categoryQuery);
+								useSearchStore.getState().addRecentSearch(categoryQuery);
+							}}
+						/>
 					</>
 				)}
 

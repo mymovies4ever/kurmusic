@@ -18,7 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Icon } from '@/src/components/ui/icon';
 import {
-	ChevronLeftIcon,
+	ChevronDownIcon,
 	DownloadIcon,
 	CheckIcon,
 	LoaderCircleIcon,
@@ -189,31 +189,24 @@ function PlayerScreenContent() {
 						<Animated.View entering={FadeInDown.duration(320)} style={styles.header}>
 							<IconButton
 								icon={() => (
-									<Icon as={ChevronLeftIcon} size={24} color={colors.onSurface} />
+									<Icon as={ChevronDownIcon} size={26} color={colors.onSurface} />
 								)}
 								onPress={() => router.back()}
 							/>
-							<Text variant={'labelLarge'} style={{ color: colors.onSurfaceVariant }}>
-								Now Playing
-							</Text>
+							<View style={styles.spotifyHeaderCenter}>
+								<Text style={styles.spotifyPlayingFrom}>
+									{albumName ? 'PLAYING FROM ALBUM' : 'PLAYING FROM QUEUE'}
+								</Text>
+								<Text numberOfLines={1} style={styles.spotifyContextTitle}>
+									{albumName || 'KurMusic Feed'}
+								</Text>
+							</View>
 							<View style={styles.headerActions}>
-								<IconButton
-									icon={() => (
-										<Icon
-											as={ListMusic}
-											size={20}
-											color={colors.onSurfaceVariant}
-										/>
-									)}
-									onPress={openQueueSheet}
-									size={20}
-									accessibilityLabel={'Open queue'}
-								/>
 								<TrackOptionsMenu
 									track={currentTrack}
 									source={'player'}
 									orientation={'horizontal'}
-									iconColor={colors.onSurfaceVariant}
+									iconColor={colors.onSurface}
 								/>
 							</View>
 						</Animated.View>
@@ -392,6 +385,22 @@ function PlayerScreenContent() {
 							<ProgressBar seekable={true} />
 							<View style={{ height: 16 }} />
 							<PlayerControls size={'lg'} />
+							<View style={styles.spotifyBottomRow}>
+								<View style={styles.deviceIndicator}>
+									<Text style={[styles.deviceText, { color: colors.primary }]}>
+										{getQualityLabel(preferredStreamQuality).toUpperCase()} •
+										LOSSLESS
+									</Text>
+								</View>
+								<IconButton
+									icon={() => (
+										<Icon as={ListMusic} size={22} color={colors.onSurface} />
+									)}
+									onPress={openQueueSheet}
+									accessibilityLabel={'Open queue'}
+									style={styles.queueButton}
+								/>
+							</View>
 						</Animated.View>
 					</View>
 				</SafeAreaView>
@@ -443,10 +452,10 @@ const styles = StyleSheet.create({
 		marginVertical: 8,
 	},
 	artworkWrapper: {
-		width: '88%',
-		maxWidth: 320,
+		width: '90%',
+		maxWidth: 330,
 		aspectRatio: 1,
-		borderRadius: 24,
+		borderRadius: 8,
 		overflow: 'hidden',
 		borderWidth: 1,
 		borderColor: 'rgba(255, 255, 255, 0.08)',
@@ -462,7 +471,7 @@ const styles = StyleSheet.create({
 		width: '100%',
 		height: '100%',
 		aspectRatio: 1,
-		borderRadius: 24,
+		borderRadius: 8,
 	},
 	artworkPlaceholder: {
 		justifyContent: 'center',
@@ -529,11 +538,45 @@ const styles = StyleSheet.create({
 		letterSpacing: 1.2,
 	},
 	controlsCard: {
-		backgroundColor: 'rgba(255, 255, 255, 0.04)',
-		borderColor: 'rgba(255, 255, 255, 0.12)',
-		borderWidth: 1,
-		borderRadius: 28,
-		padding: 24,
-		marginTop: 16,
+		paddingHorizontal: 4,
+		paddingVertical: 12,
+		marginTop: 8,
+	},
+	spotifyHeaderCenter: {
+		flex: 1,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	spotifyPlayingFrom: {
+		fontSize: 10,
+		fontWeight: '700',
+		letterSpacing: 1.2,
+		color: '#B3B3B3',
+	},
+	spotifyContextTitle: {
+		fontSize: 12,
+		fontWeight: '700',
+		color: '#FFFFFF',
+		marginTop: 1,
+	},
+	spotifyBottomRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+		marginTop: 12,
+		paddingHorizontal: 8,
+	},
+	deviceIndicator: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 6,
+	},
+	deviceText: {
+		fontSize: 11,
+		fontWeight: '700',
+		letterSpacing: 0.8,
+	},
+	queueButton: {
+		margin: 0,
 	},
 });

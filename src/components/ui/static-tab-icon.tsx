@@ -1,11 +1,8 @@
-import { memo, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { memo } from 'react';
+import { View, StyleSheet } from 'react-native';
 import type { LucideIcon } from 'lucide-react-native';
 
-const LABEL_HEIGHT = 18;
-const ICON_SIZE = 28;
-const TAB_SPRING_CONFIG = { damping: 20, stiffness: 200, mass: 0.5 };
+const ICON_SIZE = 24;
 
 interface StaticTabIconProps {
 	readonly icon: LucideIcon;
@@ -20,22 +17,12 @@ export const StaticTabIcon = memo(function StaticTabIcon({
 	focusedColor,
 	inactiveColor,
 }: StaticTabIconProps) {
-	const translateY = useSharedValue(isFocused ? 0 : LABEL_HEIGHT / 2);
-
-	useEffect(() => {
-		translateY.value = withSpring(isFocused ? 0 : LABEL_HEIGHT / 2, TAB_SPRING_CONFIG);
-	}, [isFocused, translateY]);
-
-	const animatedStyle = useAnimatedStyle(() => ({
-		transform: [{ translateY: translateY.value }],
-	}));
-
 	const currentColor = isFocused ? focusedColor : inactiveColor;
 
 	return (
-		<Animated.View style={[styles.iconContainer, animatedStyle]}>
+		<View style={styles.iconContainer}>
 			<IconComponent size={ICON_SIZE} color={currentColor} />
-		</Animated.View>
+		</View>
 	);
 });
 
