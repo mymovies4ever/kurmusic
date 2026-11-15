@@ -49,8 +49,8 @@ export function ProgressStylePicker({ value, onValueChange }: ProgressStylePicke
 
 	const handleSelectStyle = useCallback(
 		(style: (typeof STYLE_OPTIONS)[number]['value']) => {
+			setIsOpen(false);
 			onValueChange(style);
-			sheetRef.current?.close();
 		},
 		[onValueChange]
 	);

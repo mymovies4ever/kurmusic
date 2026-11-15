@@ -488,17 +488,16 @@ export const useUniqueAlbums = () =>
 		return cachedAlbums;
 	});
 
-let cachedRecentlyAdded: Track[] = [];
-let cachedRecentlyAddedTracksRef: Track[] | null = null;
-let cachedRecentlyAddedLimit = -1;
+const recentlyAddedCache = new Map<number, { tracksRef: Track[]; result: Track[] }>();
 
 export const useRecentlyAddedTracks = (limit = 10) =>
 	useLibraryStore((state) => {
-		if (state.tracks === cachedRecentlyAddedTracksRef && limit === cachedRecentlyAddedLimit) {
-			return cachedRecentlyAdded;
+		const cached = recentlyAddedCache.get(limit);
+		if (cached && cached.tracksRef === state.tracks) {
+			return cached.result;
 		}
 
-		cachedRecentlyAdded = [...state.tracks]
+		const result = [...state.tracks]
 			.sort((a, b) => {
 				const dateA = a.addedAt ? new Date(a.addedAt).getTime() : 0;
 				const dateB = b.addedAt ? new Date(b.addedAt).getTime() : 0;
@@ -506,8 +505,10 @@ export const useRecentlyAddedTracks = (limit = 10) =>
 			})
 			.slice(0, limit);
 
-		cachedRecentlyAddedTracksRef = state.tracks;
-		cachedRecentlyAddedLimit = limit;
+		recentlyAddedCache.set(limit, {
+			tracksRef: state.tracks,
+			result,
+		});
 
-		return cachedRecentlyAdded;
+		return result;
 	});

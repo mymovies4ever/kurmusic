@@ -54,8 +54,8 @@ export function AccentColorPicker({ value, onValueChange }: AccentColorPickerPro
 
 	const handleSelectColor = useCallback(
 		(color: string | null) => {
+			setIsOpen(false);
 			onValueChange(color);
-			sheetRef.current?.close();
 		},
 		[onValueChange]
 	);

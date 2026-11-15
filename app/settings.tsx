@@ -24,8 +24,6 @@ import {
 	InfoIcon,
 	PlugIcon,
 	HardDriveIcon,
-	SunMoonIcon,
-	MoonIcon,
 	LayoutGridIcon,
 	SlidersHorizontalIcon,
 	MusicIcon,
@@ -43,7 +41,6 @@ import {
 	type LucideIcon,
 } from 'lucide-react-native';
 import {
-	THEME_OPTIONS,
 	DEFAULT_TAB_OPTIONS,
 	UI_STYLE_OPTIONS,
 	STREAM_QUALITY_OPTIONS,
@@ -79,8 +76,6 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 	const playlistsCount = useLibraryStore((state) => state.playlists.length);
 	const favoritesCount = useLibraryStore((state) => state.favorites.size);
 	const {
-		themePreference,
-		setThemePreference,
 		defaultTab,
 		setDefaultTab,
 		accentColor,
@@ -100,15 +95,11 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 		downloadLocationMode,
 		musicDownloadDirectoryName,
 		customDownloadDirectoryName,
-		oledPitchBlack,
-		setOledPitchBlack,
 		setMusicDownloadDirectory,
 		setCustomDownloadDirectory,
 		resetDownloadLocation,
 	} = useSettingsStore(
 		useShallow((state) => ({
-			themePreference: state.themePreference,
-			setThemePreference: state.setThemePreference,
 			defaultTab: state.defaultTab,
 			setDefaultTab: state.setDefaultTab,
 			accentColor: state.accentColor,
@@ -128,8 +119,6 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 			downloadLocationMode: state.downloadLocationMode,
 			musicDownloadDirectoryName: state.musicDownloadDirectoryName,
 			customDownloadDirectoryName: state.customDownloadDirectoryName,
-			oledPitchBlack: state.oledPitchBlack,
-			setOledPitchBlack: state.setOledPitchBlack,
 			setMusicDownloadDirectory: state.setMusicDownloadDirectory,
 			setCustomDownloadDirectory: state.setCustomDownloadDirectory,
 			resetDownloadLocation: state.resetDownloadLocation,
@@ -494,26 +483,6 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 				</SettingsSection>
 
 				<SettingsSection title={'Appearance'}>
-					<SettingsSelect
-						icon={SunMoonIcon}
-						title={'Theme'}
-						options={THEME_OPTIONS}
-						value={themePreference}
-						onValueChange={setThemePreference}
-						portalName={'theme-select'}
-					/>
-					<SettingsItem
-						icon={MoonIcon}
-						title={'OLED Pitch Black'}
-						subtitle={'True #000000 AMOLED pure black theme for max battery life'}
-						rightElement={
-							<Switch
-								value={oledPitchBlack}
-								onValueChange={setOledPitchBlack}
-								color={colors.primary}
-							/>
-						}
-					/>
 					<AccentColorPicker value={accentColor} onValueChange={setAccentColor} />
 					<SettingsSelect
 						icon={LayoutGridIcon}
