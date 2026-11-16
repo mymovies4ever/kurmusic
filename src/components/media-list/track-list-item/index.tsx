@@ -25,7 +25,9 @@ import { useAppTheme } from '@/lib/theme';
 import {
 	useOpenPlayerOnTrackClick,
 	useShowProviderLabel,
+	useAutoQueueMediaList,
 } from '@/src/application/state/settings-store';
+import { Duration } from '@/src/domain/value-objects/duration';
 import { router } from 'expo-router';
 import { usePluginManifest } from '@/src/hooks/use-plugin-registry';
 import type { TrackListItemProps } from './types';
@@ -54,6 +56,7 @@ export const TrackListItem = memo(function TrackListItem({
 	const { colors } = useAppTheme();
 	const openPlayerOnTrackClick = useOpenPlayerOnTrackClick();
 	const showProviderLabel = useShowProviderLabel();
+	const autoQueueMediaList = useAutoQueueMediaList();
 	const { isActiveTrack, isCurrentlyPlaying, formattedPosition } = useTrackPlaybackInfo(
 		track.id.value
 	);
@@ -68,7 +71,7 @@ export const TrackListItem = memo(function TrackListItem({
 		if (onPress) {
 			onPress(track);
 		} else {
-			if (queue && queueIndex !== undefined) {
+			if (autoQueueMediaList && queue && queueIndex !== undefined) {
 				playQueue(queue, queueIndex);
 			} else {
 				play(track);
@@ -77,7 +80,16 @@ export const TrackListItem = memo(function TrackListItem({
 				router.push('/player');
 			}
 		}
-	}, [onPress, track, play, playQueue, queue, queueIndex, openPlayerOnTrackClick]);
+	}, [
+		onPress,
+		track,
+		play,
+		playQueue,
+		queue,
+		queueIndex,
+		openPlayerOnTrackClick,
+		autoQueueMediaList,
+	]);
 
 	const handleLongPress = useCallback(() => {
 		longPressedRef.current = true;
@@ -96,7 +108,12 @@ export const TrackListItem = memo(function TrackListItem({
 	const artworkUrl = artwork?.url ?? fallbackArtworkUrl;
 	const artistNames = getArtistNames(track);
 	const albumName = track.album?.name;
-	const duration = track.duration.format();
+	const duration =
+		typeof track.duration?.format === 'function'
+			? track.duration.format()
+			: typeof (track.duration as any)?.totalMilliseconds === 'number'
+				? Duration.fromMilliseconds((track.duration as any).totalMilliseconds).format()
+				: '--:--';
 	const displayTime = formattedPosition ?? duration;
 
 	const isDownloading =

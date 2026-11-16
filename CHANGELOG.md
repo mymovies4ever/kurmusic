@@ -2,6 +2,36 @@
 
 All notable changes to the Kur Music application are documented in this file.
 
+## [1.3.0] - 2026-11-16
+
+### 🚗 Android Auto Complete Redesign (Touch & Play)
+
+- **Deterministic Media IDs**: Replaced ephemeral memory cache with persistent self-describing URIs (`aa:dl:`, `aa:fav:`, `aa:pl:`, `aa:rec:`, `aa:feed:`, `aa:q:`). Song clicks in the car now reliably load and play even if Android restarts the background process.
+- **Native Bridge Crash Fix**: Fixed `ClassCastException` in `MusicModule.kt` where `Arguments.toList` caused a fatal casting error when sending categories to Android Auto.
+- **Atomic Playback Session**: Unified queue loading and playback into a single atomic call, eliminating session cancellation and ExoPlayer freeze.
+- **Instant Shortcuts**: Root menu provides immediate access to Downloaded Music (offline), Liked Songs, Recently Played, Playlists, and Home Suggestions.
+- **Zero Empty Screens**: Home suggestions gracefully fall back to liked and downloaded tracks if the feed is unpopulated when entering the car.
+
+### 💾 Backup & Restore with Downloaded Audio Files
+
+- **Physical Audio File Backup**: Downloaded audio tracks are now exported alongside the backup JSON directly to the user-selected folder via Android Storage Access Framework (SAF).
+- **Default Music Folder Sync**: Restoring backups automatically saves audio files into Android's default `Music` folder and re-links them in the app's offline library.
+- **Fixed Prototype Restore Crash**: Fixed `TypeError: undefined is not a function` in `TrackListItem` by properly normalizing imported track and playlist prototypes (`Duration`, `TrackId`).
+
+### 🎵 Playback & Queue Controls
+
+- **Auto-Queue Toggle (Default OFF)**: Added a new setting under Settings > Playback: *"Auto-queue albums & playlists"*. When off, playing a song plays only that single song without loading the entire album or playlist into the queue.
+- **Autoplay Default OFF**: Similar song recommendation at queue end defaults to off.
+- **Swipe-to-Skip Gesture**: Smooth horizontal swipe gesture on the mini-player to quickly skip to next or previous tracks.
+
+### 🎨 Spotify Dual UI & Visual Polish
+
+- **Dual Mode Theme**: AMOLED Pitch Black (`#000000`) with Electric Blue (`#1D8CF8`) accent, and clean Studio White (`#FFFFFF`).
+- **Crisp Bottom Nav Bar**: Removed faded `#B3B3B3` colors in favor of high-contrast `#555555` (light) and `#A0A0A0` (dark); eliminated the semi-translucent pill overlay for authentic Spotify look.
+- **Edge-to-Edge Alignment**: Removed unintended double safe-area insets on curved screens, aligning player controls and home tiles to 16px margins.
+- **Resized Player Artwork**: Optimized artwork dimensions (`maxWidth: 260`, `maxHeight: 34%`) so titles, controls, and scrubbers fit comfortably without crowding.
+- **120 FPS Performance Polish**: Removed laggy real-time blur shaders across tab bars, mini-player, and headers for smooth 120 FPS performance.
+
 ## [1.2.8] - 2026-11-08
 
 ### ✨ Features

@@ -184,7 +184,7 @@ function PlayerScreenContent() {
 				<StatusBar style={statusBarStyle} />
 				{renderBackground(appColors.background, colors.primary, isDark)}
 
-				<SafeAreaView style={styles.safeArea}>
+				<SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
 					<View style={styles.content}>
 						<Animated.View entering={FadeInDown.duration(320)} style={styles.header}>
 							<IconButton
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
 	content: {
 		flex: 1,
 		paddingTop: 8,
-		paddingHorizontal: 24,
+		paddingHorizontal: 16,
 		paddingBottom: 24,
 	},
 	header: {

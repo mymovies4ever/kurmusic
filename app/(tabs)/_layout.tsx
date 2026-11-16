@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Tabs, router } from 'expo-router';
-import { View, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Text, IconButton } from 'react-native-paper';
 import { LanguagesIcon, SettingsIcon } from 'lucide-react-native';
 import { useAppTheme, resolveDisplayFont } from '@/lib/theme';
@@ -19,8 +18,6 @@ import { TAB_CONFIG, TAB_BAR_HEIGHT } from '@/lib/tab-config';
 import { LottieTabIcon } from '@/src/components/ui/lottie-tab-icon';
 import { StaticTabIcon } from '@/src/components/ui/static-tab-icon';
 import { Icon } from '@/src/components/ui/icon';
-
-const INDICATOR_HEIGHT = 32;
 
 // Lightweight pub/sub so the tab bar can notify the header of active tab
 // changes without re-rendering the parent TabLayout (which would recreate
@@ -211,48 +208,17 @@ interface CustomTabBarProps extends BottomTabBarProps {
 function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: CustomTabBarProps) {
 	const { colors, isDark } = useAppTheme();
 	const insets = useSafeAreaInsets();
-	const { width: windowWidth } = useWindowDimensions();
 	const activeDownloadsCount = useActiveDownloadsCount();
 	const tabBarHeight = TAB_BAR_HEIGHT + insets.bottom;
 
-	const tabCount = Math.max(1, tabOrder.length);
-	const tabWidth = windowWidth / tabCount;
-	const indicatorWidth = Math.min(48, tabWidth - 12);
-
 	const currentRouteName = state.routes[state.index]?.name as TabId;
-	const visualIndex = tabOrder.indexOf(currentRouteName);
-	const initialX = Math.max(0, visualIndex) * tabWidth + (tabWidth - indicatorWidth) / 2;
-
-	const indicatorX = useSharedValue(initialX);
 
 	useEffect(() => {
 		onActiveTabChange(currentRouteName);
-		const newVisualIndex = tabOrder.indexOf(currentRouteName);
-		if (newVisualIndex >= 0) {
-			const newX = newVisualIndex * tabWidth + (tabWidth - indicatorWidth) / 2;
-			indicatorX.value = withSpring(newX, {
-				damping: 24,
-				stiffness: 190,
-				mass: 0.5,
-			});
-		}
-	}, [currentRouteName, tabOrder, tabWidth, indicatorWidth, indicatorX, onActiveTabChange]);
-
-	const animatedIndicatorStyle = useAnimatedStyle(() => {
-		return {
-			transform: [{ translateX: indicatorX.value }],
-		};
-	});
+	}, [currentRouteName, onActiveTabChange]);
 
 	const handleTabPress = useCallback(
-		(visualIdx: number, routeIndex: number, routeName: string) => {
-			const newX = visualIdx * tabWidth + (tabWidth - indicatorWidth) / 2;
-			indicatorX.value = withSpring(newX, {
-				damping: 24,
-				stiffness: 190,
-				mass: 0.5,
-			});
-
+		(_visualIdx: number, routeIndex: number, routeName: string) => {
 			const event = navigation.emit({
 				type: 'tabPress',
 				target: state.routes[routeIndex].key,
@@ -263,7 +229,7 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 				navigation.navigate(routeName);
 			}
 		},
-		[navigation, state.routes, indicatorX, tabWidth, indicatorWidth]
+		[navigation, state.routes]
 	);
 
 	return (
@@ -288,20 +254,6 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 				]}
 			>
 				<View style={styles.tabsContainer}>
-					<Animated.View
-						style={[
-							styles.indicator,
-							{
-								width: indicatorWidth,
-								backgroundColor: `${colors.primary}20`,
-								borderWidth: 1,
-								borderColor: `${colors.primary}45`,
-								top: 6,
-							},
-							animatedIndicatorStyle,
-						]}
-					/>
-
 					{tabOrder.map((tabId, visualIdx) => {
 						const config = TAB_CONFIG[tabId];
 						if (!config) return null;
@@ -313,6 +265,7 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 						const downloadBadgeCount = isDownloadsTab
 							? activeDownloadsCount || undefined
 							: undefined;
+						const inactiveColor = isDark ? '#A0A0A0' : '#555555';
 
 						return (
 							<Pressable
@@ -328,7 +281,7 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 										source={config.lottieSource}
 										isFocused={isFocused}
 										focusedColor={colors.primary}
-										inactiveColor={'#B3B3B3'}
+										inactiveColor={inactiveColor}
 										badgeCount={downloadBadgeCount}
 									/>
 								) : (
@@ -336,7 +289,7 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 										icon={config.icon}
 										isFocused={isFocused}
 										focusedColor={colors.primary}
-										inactiveColor={'#B3B3B3'}
+										inactiveColor={inactiveColor}
 									/>
 								)}
 								<Text
@@ -344,7 +297,7 @@ function CustomTabBar({ state, navigation, tabOrder, onActiveTabChange }: Custom
 									style={[
 										styles.tabLabel,
 										{
-											color: isFocused ? colors.primary : '#B3B3B3',
+											color: isFocused ? colors.primary : inactiveColor,
 											fontWeight: isFocused ? '700' : '500',
 										},
 									]}
@@ -428,12 +381,6 @@ const styles = StyleSheet.create({
 	tabsContainer: {
 		flex: 1,
 		flexDirection: 'row',
-	},
-	indicator: {
-		position: 'absolute',
-		left: 0,
-		height: INDICATOR_HEIGHT,
-		borderRadius: 16,
 	},
 	tabButton: {
 		flex: 1,

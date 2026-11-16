@@ -137,6 +137,7 @@ export interface SettingsState {
 	uiStyle: UIStyle;
 	preferredStreamQuality: StreamQuality;
 	autoplaySimilarOnQueueEnd: boolean;
+	autoQueueMediaList: boolean;
 	downloadLocationMode: DownloadLocationMode;
 	musicDownloadDirectoryUri: string | null;
 	musicDownloadDirectoryName: string | null;
@@ -170,6 +171,7 @@ export interface SettingsState {
 	setUIStyle: (style: UIStyle) => void;
 	setPreferredStreamQuality: (quality: StreamQuality) => void;
 	setAutoplaySimilarOnQueueEnd: (enabled: boolean) => void;
+	setAutoQueueMediaList: (enabled: boolean) => void;
 	setDownloadLocationMode: (mode: DownloadLocationMode) => void;
 	setMusicDownloadDirectory: (uri: string, name: string) => void;
 	setCustomDownloadDirectory: (uri: string, name: string) => void;
@@ -262,6 +264,7 @@ export const useSettingsStore = create<SettingsState>()(
 			uiStyle: 'clean',
 			preferredStreamQuality: 'high',
 			autoplaySimilarOnQueueEnd: false,
+			autoQueueMediaList: false,
 			downloadLocationMode: 'internal',
 			musicDownloadDirectoryUri: null,
 			musicDownloadDirectoryName: null,
@@ -387,6 +390,9 @@ export const useSettingsStore = create<SettingsState>()(
 			setAutoplaySimilarOnQueueEnd: (enabled: boolean) => {
 				set({ autoplaySimilarOnQueueEnd: enabled });
 			},
+			setAutoQueueMediaList: (enabled: boolean) => {
+				set({ autoQueueMediaList: enabled });
+			},
 			setDownloadLocationMode: (mode: DownloadLocationMode) => {
 				set({ downloadLocationMode: mode });
 			},
@@ -434,6 +440,7 @@ export const useSettingsStore = create<SettingsState>()(
 					uiStyle: 'clean',
 					preferredStreamQuality: 'high',
 					autoplaySimilarOnQueueEnd: false,
+					autoQueueMediaList: false,
 					downloadLocationMode: 'internal',
 					musicDownloadDirectoryUri: null,
 					musicDownloadDirectoryName: null,
@@ -478,6 +485,7 @@ export const useSettingsStore = create<SettingsState>()(
 					...state,
 					accentColor: state?.accentColor ?? '#1D8CF8',
 					uiStyle: state?.uiStyle === 'neo' ? 'neo' : 'clean',
+					autoQueueMediaList: state?.autoQueueMediaList ?? false,
 					downloadLocationMode: state?.downloadLocationMode ?? 'internal',
 					homeContentPreferences: normalizeHomeContentPreferences(safeHomePreferences),
 				};
@@ -576,6 +584,11 @@ export const useAutoplaySimilarOnQueueEnd = () =>
 
 export const useSetAutoplaySimilarOnQueueEnd = () =>
 	useSettingsStore((state) => state.setAutoplaySimilarOnQueueEnd);
+
+export const useAutoQueueMediaList = () => useSettingsStore((state) => state.autoQueueMediaList);
+
+export const useSetAutoQueueMediaList = () =>
+	useSettingsStore((state) => state.setAutoQueueMediaList);
 
 export const useDownloadLocationMode = () =>
 	useSettingsStore((state) => state.downloadLocationMode);

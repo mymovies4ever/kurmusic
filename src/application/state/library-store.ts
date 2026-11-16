@@ -6,7 +6,7 @@ import type { Playlist } from '../../domain/entities/playlist';
 import { Duration } from '../../domain/value-objects/duration';
 import { TrackId } from '../../domain/value-objects/track-id';
 
-function normalizeTrack(track: Track): Track {
+export function normalizeTrack(track: Track): Track {
 	const rawId = track.id as unknown;
 	const rawDuration = track.duration as unknown;
 	const rawAddedAt = track.addedAt as unknown;
@@ -45,7 +45,7 @@ function normalizeTrack(track: Track): Track {
 	};
 }
 
-function normalizePlaylist(playlist: Playlist): Playlist {
+export function normalizePlaylist(playlist: Playlist): Playlist {
 	return {
 		...playlist,
 		tracks: playlist.tracks.map((playlistTrack, index) => ({

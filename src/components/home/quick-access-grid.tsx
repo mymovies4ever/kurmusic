@@ -171,10 +171,10 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		flexWrap: 'wrap',
 		justifyContent: 'space-between',
-		gap: 8,
+		rowGap: 8,
 	},
 	card: {
-		width: '48.5%',
+		width: '48.8%',
 		height: 54,
 		borderRadius: 4,
 		overflow: 'hidden',
