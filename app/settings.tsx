@@ -40,6 +40,7 @@ import {
 	SunMoonIcon,
 	FolderUpIcon,
 	FolderDownIcon,
+	ListMusic as ListMusicIcon,
 	type LucideIcon,
 } from 'lucide-react-native';
 import {
@@ -98,6 +99,8 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 		setPreferredStreamQuality,
 		autoplaySimilarOnQueueEnd,
 		setAutoplaySimilarOnQueueEnd,
+		autoQueueMediaList,
+		setAutoQueueMediaList,
 		downloadLocationMode,
 		musicDownloadDirectoryName,
 		customDownloadDirectoryName,
@@ -124,6 +127,8 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 			setPreferredStreamQuality: state.setPreferredStreamQuality,
 			autoplaySimilarOnQueueEnd: state.autoplaySimilarOnQueueEnd,
 			setAutoplaySimilarOnQueueEnd: state.setAutoplaySimilarOnQueueEnd,
+			autoQueueMediaList: state.autoQueueMediaList,
+			setAutoQueueMediaList: state.setAutoQueueMediaList,
 			downloadLocationMode: state.downloadLocationMode,
 			musicDownloadDirectoryName: state.musicDownloadDirectoryName,
 			customDownloadDirectoryName: state.customDownloadDirectoryName,
@@ -160,6 +165,11 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 			/>
 		),
 		[autoplaySimilarOnQueueEnd, setAutoplaySimilarOnQueueEnd]
+	);
+
+	const autoQueueMediaListSwitch = useMemo(
+		() => <Switch value={autoQueueMediaList} onValueChange={setAutoQueueMediaList} />,
+		[autoQueueMediaList, setAutoQueueMediaList]
 	);
 	const { success, error: toastError } = useToast();
 	const [isExporting, setIsExporting] = useState(false);
@@ -583,6 +593,13 @@ export default function SettingsScreen({ isTab = false }: { readonly isTab?: boo
 						subtitle={'When queue ends, continue with recommended tracks'}
 						rightElement={autoplaySimilarSwitch}
 						onPress={() => setAutoplaySimilarOnQueueEnd(!autoplaySimilarOnQueueEnd)}
+					/>
+					<SettingsItem
+						icon={ListMusicIcon}
+						title={'Auto-queue albums & playlists'}
+						subtitle={'Automatically queue remaining songs when playing from a list'}
+						rightElement={autoQueueMediaListSwitch}
+						onPress={() => setAutoQueueMediaList(!autoQueueMediaList)}
 					/>
 					<SettingsSelect
 						icon={MusicIcon}

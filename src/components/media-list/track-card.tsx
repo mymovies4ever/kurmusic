@@ -27,6 +27,7 @@ import { usePluginManifest } from '@/src/hooks/use-plugin-registry';
 import {
 	useOpenPlayerOnTrackClick,
 	useShowProviderLabel,
+	useAutoQueueMediaList,
 } from '@/src/application/state/settings-store';
 import { router } from 'expo-router';
 
@@ -56,13 +57,14 @@ export const TrackCard = memo(
 		const openPlayerOnTrackClick = useOpenPlayerOnTrackClick();
 		const showProviderLabel = useShowProviderLabel();
 		const openTrackOptions = useOpenTrackOptions();
+		const autoQueueMediaList = useAutoQueueMediaList();
 
 		const handlePress = useCallback(() => {
 			if (onPress) {
 				onPress(track);
 				return;
 			}
-			if (queue && queueIndex !== undefined) {
+			if (autoQueueMediaList && queue && queueIndex !== undefined) {
 				playQueue(queue, queueIndex);
 			} else {
 				play(track);
@@ -70,7 +72,16 @@ export const TrackCard = memo(
 			if (!onPress && openPlayerOnTrackClick) {
 				router.push('/player');
 			}
-		}, [onPress, track, play, playQueue, queue, queueIndex, openPlayerOnTrackClick]);
+		}, [
+			onPress,
+			track,
+			play,
+			playQueue,
+			queue,
+			queueIndex,
+			openPlayerOnTrackClick,
+			autoQueueMediaList,
+		]);
 
 		const handleLongPress = useCallback(() => {
 			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
